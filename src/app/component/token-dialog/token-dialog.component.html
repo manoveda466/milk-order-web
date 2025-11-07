@@ -1,0 +1,71 @@
+<div class="token-dialog">
+  <div mat-dialog-title class="dialog-header">
+    <h2>{{ isEditMode ? 'Edit Token' : 'Add New Token' }}</h2>
+    <button mat-icon-button (click)="onCancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <form [formGroup]="tokenForm" class="token-form">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="field-label">Name *</label>
+          <mat-form-field appearance="outline">
+            <mat-select formControlName="userId" placeholder="Select user">
+              <mat-option *ngFor="let user of users" [value]="user.id">
+                {{ user.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="tokenForm.get('userId')?.touched && tokenForm.get('userId')?.errors">
+              {{ getErrorMessage('userId') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Token Type *</label>
+          <mat-form-field appearance="outline">
+            <mat-select formControlName="tokenType" placeholder="Select token type">
+              <mat-option *ngFor="let type of tokenTypes" [value]="type">
+                {{ type }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="tokenForm.get('tokenType')?.touched && tokenForm.get('tokenType')?.errors">
+              {{ getErrorMessage('tokenType') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="field-label">Token Quantity *</label>
+          <mat-form-field appearance="outline">
+            <input matInput formControlName="tokenQty" 
+                   placeholder="Enter token quantity" 
+                   type="number" 
+                   min="1" 
+                   max="100">
+            <mat-hint>Enter quantity between 1-100</mat-hint>
+            <mat-error *ngIf="tokenForm.get('tokenQty')?.touched && tokenForm.get('tokenQty')?.errors">
+              {{ getErrorMessage('tokenQty') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button (click)="onCancel()" type="button">
+      Cancel
+    </button>
+    <button mat-raised-button color="primary" 
+            (click)="onSubmit()" 
+            type="submit"
+            [disabled]="tokenForm.invalid">
+      {{ isEditMode ? 'Update' : 'Add Token' }}
+    </button>
+  </mat-dialog-actions>
+</div>

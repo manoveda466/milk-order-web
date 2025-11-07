@@ -1,0 +1,92 @@
+<div class="user-dialog">
+  <div mat-dialog-title class="dialog-header">
+    <h2>{{ isEditMode ? 'Edit Customer' : 'Add New Customer' }}</h2>
+    <button mat-icon-button (click)="onCancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <form [formGroup]="userForm" class="user-form">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="field-label">First Name *</label>
+          <mat-form-field appearance="outline">
+            <input matInput formControlName="firstName" placeholder="Enter first name">
+            <mat-error *ngIf="userForm.get('firstName')?.touched && userForm.get('firstName')?.errors">
+              {{ getErrorMessage('firstName') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Last Name *</label>
+          <mat-form-field appearance="outline">
+            <input matInput formControlName="lastName" placeholder="Enter last name">
+            <mat-error *ngIf="userForm.get('lastName')?.touched && userForm.get('lastName')?.errors">
+              {{ getErrorMessage('lastName') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="field-label">Mobile Number *</label>
+          <mat-form-field appearance="outline">
+            <input matInput formControlName="mobileNo" placeholder="9876543210" maxlength="10">
+            <mat-hint>Enter 10-digit mobile number</mat-hint>
+            <mat-error *ngIf="userForm.get('mobileNo')?.touched && userForm.get('mobileNo')?.errors">
+              {{ getErrorMessage('mobileNo') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Area *</label>
+          <mat-form-field appearance="outline">
+            <mat-select formControlName="area" placeholder="Select area">
+              <mat-option *ngFor="let area of areas" [value]="area">
+                {{ area }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="userForm.get('area')?.touched && userForm.get('area')?.errors">
+              {{ getErrorMessage('area') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row full-width">
+        <div class="form-field">
+          <label class="field-label">Address *</label>
+          <mat-form-field appearance="outline">
+            <textarea matInput formControlName="address" 
+                      placeholder="Enter complete address" 
+                      rows="3"
+                      cdkTextareaAutosize
+                      cdkAutosizeMinRows="3"
+                      cdkAutosizeMaxRows="5">
+            </textarea>
+            <mat-hint>Enter full address including street, city, and postal code</mat-hint>
+            <mat-error *ngIf="userForm.get('address')?.touched && userForm.get('address')?.errors">
+              {{ getErrorMessage('address') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button (click)="onCancel()" type="button">
+      Cancel
+    </button>
+    <button mat-raised-button color="primary" 
+            (click)="onSubmit()" 
+            type="submit"
+            [disabled]="userForm.invalid">
+      {{ isEditMode ? 'Update' : 'Add' }}
+    </button>
+  </mat-dialog-actions>
+</div>

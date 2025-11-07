@@ -1,0 +1,98 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <h2>{{ showOtpScreen ? 'Enter OTP' : 'Login' }}</h2>
+      <p class="subtitle">
+        {{ showOtpScreen ? 'We have sent a 6-digit OTP to your mobile number' : 'Enter your mobile number to continue' }}
+      </p>
+    </div>
+
+    <!-- Mobile Number Input Screen -->
+    <div *ngIf="!showOtpScreen" class="mobile-input-section">
+      <div class="form-group">
+        <label for="mobileNumber">Mobile Number</label>
+        <div class="mobile-input-container">
+          <span class="country-code">+91</span>
+          <input
+            id="mobileNumber"
+            type="tel"
+            [(ngModel)]="mobileNumber"
+            (input)="onMobileNumberInput($event)"
+            placeholder="Enter 10-digit mobile number"
+            maxlength="10"
+            class="mobile-input"
+            [disabled]="isLoading"
+          />
+        </div>
+        
+      </div>
+
+      <button
+        type="button"
+        (click)="sendOtp()"
+        [disabled]="!isValidMobileNumber() || isLoading"
+        class="primary-button"
+        [class.button-disabled]="!isValidMobileNumber() || isLoading"
+      >
+        <span *ngIf="isLoading" class="loading-spinner"></span>
+        {{ isLoading ? 'Sending OTP...' : 'Send OTP' }}
+      </button>
+    </div>
+
+    <!-- OTP Input Screen -->
+    <div *ngIf="showOtpScreen" class="otp-input-section">
+      <div class="mobile-display">
+        <span class="mobile-number">+91 {{ mobileNumber }}</span>
+        <button type="button" (click)="goBack()" class="change-number-btn">Change</button>
+      </div>
+
+      <div class="form-group">
+        <label for="otp">Enter OTP</label>
+        <input
+          id="otp"
+          type="tel"
+          [(ngModel)]="otp"
+          (input)="onOtpInput($event)"
+          placeholder="000000"
+          maxlength="6"
+          class="otp-input"
+          [disabled]="isLoading"
+        />
+      </div>
+
+      <div class="otp-timer" *ngIf="!canResendOtp">
+        <span>Resend OTP in {{ otpTimer }}s</span>
+      </div>
+
+      <div class="otp-actions">
+        <button
+          type="button"
+          (click)="verifyOtp()"
+          [disabled]="otp.length !== 6 || isLoading"
+          class="primary-button"
+        >
+          <span *ngIf="isLoading" class="loading-spinner"></span>
+          {{ isLoading ? 'Verifying...' : 'Verify OTP' }}
+        </button>
+
+        <button
+          type="button"
+          (click)="resendOtp()"
+          [disabled]="!canResendOtp || isLoading"
+          class="secondary-button"
+        >
+          Resend OTP
+        </button>
+      </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div *ngIf="successMessage" class="message success-message">
+      {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="message error-message">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

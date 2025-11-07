@@ -1,0 +1,370 @@
+<div class="home-container">
+  <!-- Left Sidebar Menu -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>Milk Order Dashboard</h3>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <ul class="menu-list">
+        <li *ngFor="let item of menuItems" 
+            class="menu-item" 
+            [class.active]="item.active"
+            (click)="selectMenuItem(item.id)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-title">{{ item.title }}</span>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="logout-icon">🚪</span>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="content-header">
+      <h2>{{ activeMenuTitle }}</h2>
+    </div>
+
+    <div class="content-body">
+      <!-- User Details Section -->
+      <div *ngIf="activeSection === 'userDetails'" class="section user-details-section">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Customer Information</mat-card-title>
+            <mat-card-subtitle>Manage customer profile and personal details</mat-card-subtitle>
+            <div class="header-actions">
+              <button mat-raised-button color="primary" (click)="editUser(0)">
+                <mat-icon>person_add</mat-icon>
+                Add Customer
+              </button>
+            </div>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="table-container">
+              <mat-table [dataSource]="userDataSource" matSort class="mat-elevation-1">
+                <ng-container matColumnDef="name">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+                  <mat-cell *matCellDef="let user">{{user.name}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="mobileNo">
+                  <mat-header-cell *matHeaderCellDef>Mobile No</mat-header-cell>
+                  <mat-cell *matCellDef="let user">{{user.mobileNo}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="area">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Area</mat-header-cell>
+                  <mat-cell *matCellDef="let user">{{user.area}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="address">
+                  <mat-header-cell *matHeaderCellDef>Address</mat-header-cell>
+                  <mat-cell *matCellDef="let user" class="address-cell">{{user.address}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="isActive">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+                  <mat-cell *matCellDef="let user">
+                    <mat-chip-set>
+                      <mat-chip [class]="user.isActive ? 'status-active' : 'status-inactive'" selected>
+                        {{user.isActive ? 'Active' : 'Inactive'}}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+                  <mat-cell *matCellDef="let user">
+                    <button mat-icon-button [matMenuTriggerFor]="userMenu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #userMenu="matMenu">
+                      <button mat-menu-item (click)="editUser(user.id)">
+                        <mat-icon>edit</mat-icon>
+                        <span>Edit</span>
+                      </button>
+                      <button mat-menu-item (click)="deactivateUser(user.id)" *ngIf="user.isActive">
+                        <mat-icon>block</mat-icon>
+                        <span>Deactivate</span>
+                      </button>
+                      <button mat-menu-item (click)="activateUser(user.id)" *ngIf="!user.isActive">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Activate</span>
+                      </button>
+                    </mat-menu>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="userDisplayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: userDisplayedColumns;"></mat-row>
+              </mat-table>
+
+              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Order Details Section -->
+      <div *ngIf="activeSection === 'orderDetails'" class="section order-details-section">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Order Management</mat-card-title>
+            <mat-card-subtitle>Track and manage customer orders</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <!-- Search and Filter Section -->
+            <div class="search-filters">
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Delivery Date</mat-label>
+                <input matInput [matDatepicker]="picker" [(ngModel)]="orderFilters.deliveryDate" (ngModelChange)="filterOrders()">
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Area</mat-label>
+                <mat-select [(ngModel)]="orderFilters.area" (ngModelChange)="filterOrders()">
+                  <mat-option value="">All Areas</mat-option>
+                  <mat-option *ngFor="let area of uniqueAreas" [value]="area">{{area}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Status</mat-label>
+                <mat-select [(ngModel)]="orderFilters.status" (ngModelChange)="filterOrders()">
+                  <mat-option value="">All Statuses</mat-option>
+                  <mat-option *ngFor="let status of uniqueStatuses" [value]="status">{{status}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn">
+                <mat-icon>clear</mat-icon>
+                Clear Filters
+              </button>
+            </div>
+            
+            <!-- Bulk Update Section -->
+            <div class="bulk-update-section" *ngIf="getSelectedOrdersCount() > 0">
+              <div class="bulk-update-info">
+                <span>{{getSelectedOrdersCount()}} order(s) selected</span>
+              </div>
+              <mat-form-field appearance="outline" class="bulk-status-field">
+                <mat-label>Update Status</mat-label>
+                <mat-select [(ngModel)]="bulkUpdateStatus">
+                  <mat-option value="Delivered">Delivered</mat-option>
+                  <mat-option value="Confirmed">Confirmed</mat-option>
+                  <mat-option value="Cancelled">Cancelled</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <button mat-raised-button color="accent" (click)="bulkUpdateOrderStatus()" [disabled]="!bulkUpdateStatus">
+                <mat-icon>update</mat-icon>
+                Update Selected
+              </button>
+            </div>
+            
+            <div class="table-container">
+              <mat-table [dataSource]="orderDataSource" matSort class="mat-elevation-1">
+                <ng-container matColumnDef="select">
+                  <mat-header-cell *matHeaderCellDef>
+                    <mat-checkbox 
+                      [checked]="isAllOrdersSelected()"
+                      [indeterminate]="getSelectedOrdersCount() > 0 && !isAllOrdersSelected()"
+                      (change)="toggleAllOrders()">
+                    </mat-checkbox>
+                  </mat-header-cell>
+                  <mat-cell *matCellDef="let order">
+                    <mat-checkbox 
+                      [checked]="isOrderSelected(order.id)"
+                      (change)="toggleOrderSelection(order.id)">
+                    </mat-checkbox>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="id">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Order ID</mat-header-cell>
+                  <mat-cell *matCellDef="let order" class="order-id">{{order.id}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="userName">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+                  <mat-cell *matCellDef="let order">{{order.userName}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="deliverDate">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Deliver Date</mat-header-cell>
+                  <mat-cell *matCellDef="let order">{{order.deliverDate | date:'dd-MMM-yyyy'}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="area">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Area</mat-header-cell>
+                  <mat-cell *matCellDef="let order">{{order.area}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="tokenQty">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Token Qty</mat-header-cell>
+                  <mat-cell *matCellDef="let order">{{order.tokenQty}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                  <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+                  <mat-cell *matCellDef="let order">
+                    <mat-chip-set>
+                      <mat-chip 
+                        [color]="order.status === 'Delivered' ? 'accent' : order.status === 'Confirmed' ? 'primary' : order.status === 'Cancelled' ? 'warn' : 'primary'" 
+                        selected>
+                        {{order.status}}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+                  <mat-cell *matCellDef="let order">
+                    <button mat-icon-button [matMenuTriggerFor]="orderMenu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #orderMenu="matMenu">
+                      <button mat-menu-item (click)="deliverOrder(order.id)">
+                        <mat-icon>local_shipping</mat-icon>
+                        <span>Deliver Order</span>
+                      </button>
+                      <button mat-menu-item (click)="cancelOrder(order.id)">
+                        <mat-icon>cancel</mat-icon>
+                        <span>Cancel Order</span>
+                      </button>
+                    </mat-menu>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="orderDisplayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: orderDisplayedColumns;"></mat-row>
+              </mat-table>
+
+              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- User Token Details Section -->
+      <div *ngIf="activeSection === 'userTokenDetails'" class="section token-details-section">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Token Management</mat-card-title>
+            <mat-card-subtitle>Manage user tokens and subscriptions</mat-card-subtitle>
+            <div class="header-actions">
+              <button mat-raised-button color="primary" (click)="addToken()">
+                <mat-icon>add</mat-icon>
+                Add Token
+              </button>
+            </div>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="table-container">
+              <mat-table [dataSource]="tokenDataSource" matSort class="mat-elevation-1">
+                <ng-container matColumnDef="name">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+                  <mat-cell *matCellDef="let token">{{token.name}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="tokenQty">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Token Qty</mat-header-cell>
+                  <mat-cell *matCellDef="let token">{{token.tokenQty}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="issueDate">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Issue Date</mat-header-cell>
+                  <mat-cell *matCellDef="let token">{{token.issueDate | date:'dd-MMM-yyyy'}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="tokenType">
+                  <mat-header-cell *matHeaderCellDef>Token Type</mat-header-cell>
+                  <mat-cell *matCellDef="let token">{{token.tokenType}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+                  <mat-cell *matCellDef="let token">
+                    <button mat-icon-button [matMenuTriggerFor]="tokenMenu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #tokenMenu="matMenu">                        
+                      <button mat-menu-item (click)="deleteToken(token.id)">
+                        <mat-icon>delete</mat-icon>
+                        <span>Delete Token</span>
+                      </button>
+                    </mat-menu>
+                  </mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="tokenDisplayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: tokenDisplayedColumns;"></mat-row>
+              </mat-table>
+
+              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Customer Token Balance Section -->
+      <div *ngIf="activeSection === 'customerTokenBalance'" class="section token-balance-section">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Customer Token Balance</mat-card-title>
+            <mat-card-subtitle>View customer token balance information</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <!-- Search and Filter Section -->
+            <div class="search-filters">
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Customer Name</mat-label>
+                <mat-select [(ngModel)]="tokenBalanceFilters.customerName" (ngModelChange)="filterTokenBalance()">
+                  <mat-option value="">All Customers</mat-option>
+                  <mat-option *ngFor="let customer of uniqueCustomerNames" [value]="customer">{{customer}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <button mat-raised-button color="primary" (click)="clearTokenBalanceFilters()" class="clear-btn">
+                <mat-icon>clear</mat-icon>
+                Clear Filters
+              </button>
+            </div>
+            
+            <div class="table-container">
+              <mat-table [dataSource]="tokenBalanceDataSource" matSort class="mat-elevation-1">
+                <ng-container matColumnDef="customerName">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+                  <mat-cell *matCellDef="let balance">{{balance.customerName}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="balanceTokenQty">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Balance Token Qty</mat-header-cell>
+                  <mat-cell *matCellDef="let balance" class="token-number">{{balance.balanceTokenQty}}</mat-cell>
+                </ng-container>
+
+                <mat-header-row *matHeaderRowDef="tokenBalanceDisplayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: tokenBalanceDisplayedColumns;"></mat-row>
+              </mat-table>
+
+              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>
