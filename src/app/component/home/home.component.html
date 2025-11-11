@@ -51,17 +51,17 @@
               <mat-table [dataSource]="userDataSource" matSort class="mat-elevation-1">
                 <ng-container matColumnDef="name">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
-                  <mat-cell *matCellDef="let user">{{user.name}}</mat-cell>
+                  <mat-cell *matCellDef="let user">{{user.firstName +' '+ user.lastName}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="mobileNo">
                   <mat-header-cell *matHeaderCellDef>Mobile No</mat-header-cell>
-                  <mat-cell *matCellDef="let user">{{user.mobileNo}}</mat-cell>
+                  <mat-cell *matCellDef="let user">{{user.mobile}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="area">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Area</mat-header-cell>
-                  <mat-cell *matCellDef="let user">{{user.area}}</mat-cell>
+                  <mat-cell *matCellDef="let user">{{user.areaName}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="address">
@@ -87,15 +87,15 @@
                       <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #userMenu="matMenu">
-                      <button mat-menu-item (click)="editUser(user.id)">
+                      <button mat-menu-item (click)="editUser(user.userId)">
                         <mat-icon>edit</mat-icon>
                         <span>Edit</span>
                       </button>
-                      <button mat-menu-item (click)="deactivateUser(user.id)" *ngIf="user.isActive">
+                      <button mat-menu-item (click)="deactivateUser(user.userId)" *ngIf="user.isActive">
                         <mat-icon>block</mat-icon>
                         <span>Deactivate</span>
                       </button>
-                      <button mat-menu-item (click)="activateUser(user.id)" *ngIf="!user.isActive">
+                      <button mat-menu-item (click)="activateUser(user.userId)" *ngIf="!user.isActive">
                         <mat-icon>check_circle</mat-icon>
                         <span>Activate</span>
                       </button>
@@ -162,7 +162,6 @@
                 <mat-label>Update Status</mat-label>
                 <mat-select [(ngModel)]="bulkUpdateStatus">
                   <mat-option value="Delivered">Delivered</mat-option>
-                  <mat-option value="Confirmed">Confirmed</mat-option>
                   <mat-option value="Cancelled">Cancelled</mat-option>
                 </mat-select>
               </mat-form-field>
@@ -184,15 +183,15 @@
                   </mat-header-cell>
                   <mat-cell *matCellDef="let order">
                     <mat-checkbox 
-                      [checked]="isOrderSelected(order.id)"
-                      (change)="toggleOrderSelection(order.id)">
+                      [checked]="isOrderSelected(order.orderId)"
+                      (change)="toggleOrderSelection(order.orderId)">
                     </mat-checkbox>
                   </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="id">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Order ID</mat-header-cell>
-                  <mat-cell *matCellDef="let order" class="order-id">{{order.id}}</mat-cell>
+                  <mat-cell *matCellDef="let order" class="order-id">#{{order.orderId}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="userName">
@@ -202,12 +201,12 @@
 
                 <ng-container matColumnDef="deliverDate">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Deliver Date</mat-header-cell>
-                  <mat-cell *matCellDef="let order">{{order.deliverDate | date:'dd-MMM-yyyy'}}</mat-cell>
+                  <mat-cell *matCellDef="let order">{{order.orderDate | date:'dd-MMM-yyyy'}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="area">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Area</mat-header-cell>
-                  <mat-cell *matCellDef="let order">{{order.area}}</mat-cell>
+                  <mat-cell *matCellDef="let order">{{order.areaName}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="tokenQty">
@@ -235,11 +234,11 @@
                       <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #orderMenu="matMenu">
-                      <button mat-menu-item (click)="deliverOrder(order.id)">
+                      <button mat-menu-item (click)="deliverOrder(order.orderId)" *ngIf="order.status !== 'Delivered'">
                         <mat-icon>local_shipping</mat-icon>
                         <span>Deliver Order</span>
                       </button>
-                      <button mat-menu-item (click)="cancelOrder(order.id)">
+                      <button mat-menu-item (click)="cancelOrder(order.orderId)" *ngIf="order.status !== 'Cancelled'">
                         <mat-icon>cancel</mat-icon>
                         <span>Cancel Order</span>
                       </button>
@@ -276,12 +275,12 @@
               <mat-table [dataSource]="tokenDataSource" matSort class="mat-elevation-1">
                 <ng-container matColumnDef="name">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
-                  <mat-cell *matCellDef="let token">{{token.name}}</mat-cell>
+                  <mat-cell *matCellDef="let token">{{token.userName}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="tokenQty">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Token Qty</mat-header-cell>
-                  <mat-cell *matCellDef="let token">{{token.tokenQty}}</mat-cell>
+                  <mat-cell *matCellDef="let token">{{token.qty}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="issueDate">
@@ -301,7 +300,7 @@
                       <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #tokenMenu="matMenu">                        
-                      <button mat-menu-item (click)="deleteToken(token.id)">
+                      <button mat-menu-item (click)="deleteToken(token.userTokenId)">
                         <mat-icon>delete</mat-icon>
                         <span>Delete Token</span>
                       </button>
@@ -334,7 +333,7 @@
                 <mat-label>Customer Name</mat-label>
                 <mat-select [(ngModel)]="tokenBalanceFilters.customerName" (ngModelChange)="filterTokenBalance()">
                   <mat-option value="">All Customers</mat-option>
-                  <mat-option *ngFor="let customer of uniqueCustomerNames" [value]="customer">{{customer}}</mat-option>
+                  <mat-option *ngFor="let customer of customerTokenBalance" [value]="customer.userName">{{customer.userName}}</mat-option>
                 </mat-select>
               </mat-form-field>
               
@@ -348,12 +347,12 @@
               <mat-table [dataSource]="tokenBalanceDataSource" matSort class="mat-elevation-1">
                 <ng-container matColumnDef="customerName">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
-                  <mat-cell *matCellDef="let balance">{{balance.customerName}}</mat-cell>
+                  <mat-cell *matCellDef="let balance">{{balance.userName}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="balanceTokenQty">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Balance Token Qty</mat-header-cell>
-                  <mat-cell *matCellDef="let balance" class="token-number">{{balance.balanceTokenQty}}</mat-cell>
+                  <mat-cell *matCellDef="let balance" class="token-number">{{balance.tokenQty}}</mat-cell>
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="tokenBalanceDisplayedColumns"></mat-header-row>

@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { MilkOrderService } from '../../services/milk-order.service';
 
 @Component({
   selector: 'app-user-dialog',
@@ -29,20 +30,10 @@ export class UserDialogComponent {
   userForm: FormGroup;
   isEditMode: boolean = false;
 
-  areas: string[] = [
-    'Downtown',
-    'Uptown',
-    'Suburbs',
-    'Eastside',
-    'Westside',
-    'North District',
-    'South District',
-    'City Center',
-    'Business District',
-    'Residential Area'
-  ];
+  areas: any[] = [];
 
   constructor(
+    private milkOrderService: MilkOrderService,
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<UserDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -53,10 +44,12 @@ export class UserDialogComponent {
     if (this.isEditMode && data.user) {
       this.populateForm(data.user);
     }
+    this.getAreas();
   }
 
   createForm(): FormGroup {
     return this.fb.group({
+      userId: [''], // Hidden field for updates
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       mobileNo: ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
@@ -66,33 +59,102 @@ export class UserDialogComponent {
   }
 
   populateForm(user: any): void {
-    const nameParts = user.name.split(' ');
     this.userForm.patchValue({
-      firstName: nameParts[0] || '',
-      lastName: nameParts.slice(1).join(' ') || '',
-      mobileNo: user.mobileNo.replace('+91 ', ''),
-      area: user.area,
+      userId: user.userId || user.id, // Support both userId and id field names
+      firstName: user.firstName,
+      lastName: user.lastName,
+      mobileNo: user.mobile,
+      area: user.areaId,
       address: user.address
     });
   }
 
-  onSubmit(): void {
+  onSubmit(isEditMode: boolean): void {
     if (this.userForm.valid) {
       const formValue = this.userForm.value;
-      const userData = {
-        id: this.isEditMode ? this.data.user.id : Date.now(),
-        name: `${formValue.firstName} ${formValue.lastName}`,
-        mobileNo: `+91 ${formValue.mobileNo}`,
-        area: formValue.area,
+      const userData: any = {
+        userId: formValue.userId == '' ? 0 : formValue.userId,
+        firstName: formValue.firstName,
+        lastName: formValue.lastName,
+        mobile: formValue.mobileNo.toString(),
+        areaId: formValue.area,
         address: formValue.address,
-        isActive: this.isEditMode ? this.data.user.isActive : true
+        isActive: true,
+        createdBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
       };
 
-      this.dialogRef.close(userData);
+      // Add userId for update operations
+      if (isEditMode && formValue.userId) {
+        userData.userId = formValue.userId;
+      }
+      
+      if(!isEditMode){
+        this.milkOrderService.createCustomer(userData).subscribe({
+          next: (response) => {
+            if (response && response.result && response.result.data) {
+              this.dialogRef.close({
+                success: true,
+                data: response.result.data,
+                message: 'Customer created successfully'
+              });
+            } else {
+              this.dialogRef.close({
+                success: false,
+                message: 'Failed to create customer'
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Error creating customer:', error);
+            this.dialogRef.close({
+              success: false,
+              message: error.message || 'Failed to create customer'
+            });
+          }
+        });   
+      }else{
+          this.milkOrderService.updateCustomer(userData).subscribe({
+          next: (response) => {
+            if (response && response.result && response.result.data) {
+              this.dialogRef.close({
+                success: true,
+                data: response.result.data,
+                message: 'Customer updated successfully'
+              });
+            } else {
+              this.dialogRef.close({
+                success: false,
+                message: 'Failed to update customer'
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Error updating customer:', error);
+            this.dialogRef.close({
+              success: false,
+              message: error.message || 'Failed to update customer'
+            });
+          }
+        });
+      }
+      
     } else {
       this.markFormGroupTouched();
     }
   }
+
+  getAreas(): void {
+   this.milkOrderService.getAreas().subscribe({
+        next: (response) => {
+          if (response && response.result && response.result.data.length) {
+            this.areas = response.result.data;
+          } 
+        },
+        error: (error) => {
+         
+        }
+      });
+    }
 
   onCancel(): void {
     this.dialogRef.close();
@@ -103,6 +165,27 @@ export class UserDialogComponent {
       const control = this.userForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  // Handle mobile number input (only allow digits)
+  onMobileNumberInput(event: any): void {
+    // Remove all non-digit characters
+    const value = event.target.value.replace(/\D/g, '');
+    // Limit to 10 digits maximum
+    const cleanValue = value.slice(0, 10);
+    // Update the form control
+    this.userForm.get('mobileNo')?.setValue(cleanValue);
+    // Update the input field to reflect the cleaned value
+    event.target.value = cleanValue;
+  }
+
+  // Prevent non-numeric characters from being typed
+  onKeyPress(event: KeyboardEvent): void {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Allow only digits (0-9), backspace, delete, tab, escape, enter
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+    }
   }
 
   getErrorMessage(fieldName: string): string {

@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { MilkOrderService } from '../../services/milk-order.service';
 
 @Component({
   selector: 'app-token-dialog',
@@ -27,32 +28,24 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 })
 export class TokenDialogComponent {
   tokenForm: FormGroup;
-  isEditMode: boolean = false;
 
   // List of users for dropdown (passed from parent)
   users: any[] = [];
 
   // Token types for dropdown
-  tokenTypes: string[] = [
-    'Daily Basic',
-    'Weekly Standard',
-    'Monthly Premium',
-    'Quarterly Special',
-    'Annual Elite'
-  ];
+  tokenTypes: any[] = [];
 
   constructor(
+    private milkOrderService: MilkOrderService,
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<TokenDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.isEditMode = !!data?.token;
     this.users = data?.users || [];
     this.tokenForm = this.createForm();
     
-    if (this.isEditMode && data.token) {
-      this.populateForm(data.token);
-    }
+    
+    this.getTokenTypes();
   }
 
   createForm(): FormGroup {
@@ -74,21 +67,51 @@ export class TokenDialogComponent {
   onSubmit(): void {
     if (this.tokenForm.valid) {
       const formValue = this.tokenForm.value;
-      const selectedUser = this.users.find(u => u.id === formValue.userId);
       
       const tokenData = {
-        id: this.isEditMode ? this.data.token.id : Date.now(),
-        name: selectedUser?.name || '',
-        tokenType: formValue.tokenType,
-        tokenQty: formValue.tokenQty,
-        issueDate: this.isEditMode ? this.data.token.issueDate : new Date().toISOString().split('T')[0]
+        userId: formValue.userId,
+        tokenId: formValue.tokenType,
+        Qty: formValue.tokenQty,
+        issueDate: new Date().toISOString().split('T')[0]
       };
 
-      this.dialogRef.close(tokenData);
+      this.milkOrderService.createCustomerToken(tokenData).subscribe({
+        next: (response) => {
+          if(response && response.result.data){
+            this.milkOrderService.updateCumulativeToken({userId: formValue.userId, tokenQty: formValue.tokenQty, status: 'add'}).subscribe({
+              next: (res) => {
+                if(res && res.result.data){
+                  this.dialogRef.close();
+                }
+              },
+              error: () => {
+                
+              }
+            });
+            
+          }
+        },
+        error: (error) => {
+          console.error('Error creating token:', error);
+        }
+      });
     } else {
       this.markFormGroupTouched();
     }
   }
+
+  getTokenTypes(): void {
+    this.milkOrderService.getTokens().subscribe({
+      next: (response) => {
+        this.tokenTypes = response.result.data;
+      },
+      error: (error) => {
+        console.error('Error fetching token types:', error);
+      }
+    });
+  }
+
+  
 
   onCancel(): void {
     this.dialogRef.close();

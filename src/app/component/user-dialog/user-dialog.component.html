@@ -8,6 +8,9 @@
 
   <mat-dialog-content class="dialog-content">
     <form [formGroup]="userForm" class="user-form">
+      <!-- Hidden userId field for updates -->
+      <input type="hidden" formControlName="userId">
+      
       <div class="form-row">
         <div class="form-field">
           <label class="field-label">First Name *</label>
@@ -34,7 +37,13 @@
         <div class="form-field">
           <label class="field-label">Mobile Number *</label>
           <mat-form-field appearance="outline">
-            <input matInput formControlName="mobileNo" placeholder="9876543210" maxlength="10">
+            <input matInput formControlName="mobileNo" 
+                   placeholder="Mobile Number" 
+                   maxlength="10"
+                   (input)="onMobileNumberInput($event)"
+                   (keypress)="onKeyPress($event)"
+                   pattern="[0-9]*"
+                   inputmode="numeric">
             <mat-hint>Enter 10-digit mobile number</mat-hint>
             <mat-error *ngIf="userForm.get('mobileNo')?.touched && userForm.get('mobileNo')?.errors">
               {{ getErrorMessage('mobileNo') }}
@@ -46,8 +55,8 @@
           <label class="field-label">Area *</label>
           <mat-form-field appearance="outline">
             <mat-select formControlName="area" placeholder="Select area">
-              <mat-option *ngFor="let area of areas" [value]="area">
-                {{ area }}
+              <mat-option *ngFor="let area of areas" [value]="area.areaId">
+                {{ area.areaName }}
               </mat-option>
             </mat-select>
             <mat-error *ngIf="userForm.get('area')?.touched && userForm.get('area')?.errors">
@@ -62,11 +71,9 @@
           <label class="field-label">Address *</label>
           <mat-form-field appearance="outline">
             <textarea matInput formControlName="address" 
-                      placeholder="Enter complete address" 
-                      rows="3"
+                      placeholder="Enter complete address"                       
                       cdkTextareaAutosize
-                      cdkAutosizeMinRows="3"
-                      cdkAutosizeMaxRows="5">
+                      >
             </textarea>
             <mat-hint>Enter full address including street, city, and postal code</mat-hint>
             <mat-error *ngIf="userForm.get('address')?.touched && userForm.get('address')?.errors">
@@ -83,7 +90,7 @@
       Cancel
     </button>
     <button mat-raised-button color="primary" 
-            (click)="onSubmit()" 
+            (click)="onSubmit(isEditMode)" 
             type="submit"
             [disabled]="userForm.invalid">
       {{ isEditMode ? 'Update' : 'Add' }}

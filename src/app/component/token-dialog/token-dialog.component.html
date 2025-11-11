@@ -1,6 +1,6 @@
 <div class="token-dialog">
   <div mat-dialog-title class="dialog-header">
-    <h2>{{ isEditMode ? 'Edit Token' : 'Add New Token' }}</h2>
+    <h2>Add New Token</h2>
     <button mat-icon-button (click)="onCancel()" class="close-button">
       <mat-icon>close</mat-icon>
     </button>
@@ -13,8 +13,8 @@
           <label class="field-label">Name *</label>
           <mat-form-field appearance="outline">
             <mat-select formControlName="userId" placeholder="Select user">
-              <mat-option *ngFor="let user of users" [value]="user.id">
-                {{ user.name }}
+              <mat-option *ngFor="let user of users" [value]="user.userId">
+                {{ user.firstName+' '+user.lastName }}
               </mat-option>
             </mat-select>
             <mat-error *ngIf="tokenForm.get('userId')?.touched && tokenForm.get('userId')?.errors">
@@ -27,8 +27,8 @@
           <label class="field-label">Token Type *</label>
           <mat-form-field appearance="outline">
             <mat-select formControlName="tokenType" placeholder="Select token type">
-              <mat-option *ngFor="let type of tokenTypes" [value]="type">
-                {{ type }}
+              <mat-option *ngFor="let type of tokenTypes" [value]="type.tokenId">
+                {{ type.tokenType }}
               </mat-option>
             </mat-select>
             <mat-error *ngIf="tokenForm.get('tokenType')?.touched && tokenForm.get('tokenType')?.errors">
@@ -46,8 +46,7 @@
                    placeholder="Enter token quantity" 
                    type="number" 
                    min="1" 
-                   max="100">
-            <mat-hint>Enter quantity between 1-100</mat-hint>
+                   max="1000">
             <mat-error *ngIf="tokenForm.get('tokenQty')?.touched && tokenForm.get('tokenQty')?.errors">
               {{ getErrorMessage('tokenQty') }}
             </mat-error>
@@ -65,7 +64,7 @@
             (click)="onSubmit()" 
             type="submit"
             [disabled]="tokenForm.invalid">
-      {{ isEditMode ? 'Update' : 'Add Token' }}
+       Add Token
     </button>
   </mat-dialog-actions>
 </div>

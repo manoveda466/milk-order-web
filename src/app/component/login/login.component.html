@@ -19,10 +19,13 @@
             type="tel"
             [(ngModel)]="mobileNumber"
             (input)="onMobileNumberInput($event)"
+            (keypress)="onKeyPress($event)"
             placeholder="Enter 10-digit mobile number"
             maxlength="10"
             class="mobile-input"
             [disabled]="isLoading"
+            pattern="[0-9]*"
+            inputmode="numeric"
           />
         </div>
         
@@ -30,13 +33,13 @@
 
       <button
         type="button"
-        (click)="sendOtp()"
+        (click)="checkValidUser()"
         [disabled]="!isValidMobileNumber() || isLoading"
         class="primary-button"
         [class.button-disabled]="!isValidMobileNumber() || isLoading"
       >
         <span *ngIf="isLoading" class="loading-spinner"></span>
-        {{ isLoading ? 'Sending OTP...' : 'Send OTP' }}
+        {{ isLoading ? 'Validating User...' : 'Continue' }}
       </button>
     </div>
 

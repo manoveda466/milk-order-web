@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
+import { MilkOrderService } from '../../services/milk-order.service';
 @Component({
   selector: 'app-login',
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   mobileNumber: string = '';
   otp: string = '';
   showOtpScreen: boolean = false;
@@ -19,25 +19,22 @@ export class LoginComponent {
   otpTimer: number = 30;
   canResendOtp: boolean = false;
   private timerInterval: any;
+  customerDetails: any;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private milkOrderService: MilkOrderService
+  ) {}
 
   // Validate mobile number (10 digits, starting with 6-9)
   isValidMobileNumber(): boolean {
     if (!this.mobileNumber) return false;
     const mobileRegex = /^[6-9]\d{9}$/;
     const isValid = mobileRegex.test(this.mobileNumber);
-    console.log('Validating mobile:', this.mobileNumber, 'Length:', this.mobileNumber.length, 'Valid:', isValid);
     return isValid;
   }
 
-  // Alternative validation for testing - accepts any 10-digit number
-  isValidMobileNumberTest(): boolean {
-    return !!(this.mobileNumber && this.mobileNumber.length === 10);
-  }
-
-  // Send OTP to mobile number
-  sendOtp(): void {
+  checkValidUser() {
     if (!this.isValidMobileNumber()) {
       this.errorMessage = 'Please enter a valid 10-digit mobile number';
       return;
@@ -46,76 +43,69 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Simulate API call to send OTP
-    setTimeout(() => {
-      this.isLoading = false;
-      this.showOtpScreen = true;
-      this.successMessage = `OTP sent to +91 ${this.mobileNumber}`;
-      this.startOtpTimer();
-    }, 2000);
+    
+   this.milkOrderService.checkValidUser(this.mobileNumber).subscribe({
+      next: (response) => {
+        if(response && response.result.data.length > 0 && response.result.data[0].userId > 0){
+          this.showOtpScreen = true;
+          this.successMessage = `User is valid. Sending OTP to +91 ${this.mobileNumber}`;
+          this.getUserDetailsById(response.result.data[0].userId);
+          
+          const otpData = {
+            "userId": response.result.data[0].userId,
+            "otp": null,
+            "validity": new Date(),
+            "createdOn": new Date()
+          };
+          this.sendOTP(otpData);
+          this.isLoading = false;
+        }
+        else{
+          this.isLoading = false;
+          this.errorMessage = 'User is not valid. Please try again.';
+          this.showOtpScreen = false;
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = error.message || 'User is not valid. Please try again.';
+      }
+    });
   }
 
-  // Verify OTP
-  verifyOtp(): void {
-    if (!this.otp || this.otp.length !== 6) {
-      this.errorMessage = 'Please enter a valid 6-digit OTP';
-      return;
+  getUserDetailsById(userId: number) {
+    this.milkOrderService.getUserDetailsById(userId).subscribe({
+        next: (response) => {
+          this.isLoading = false; 
+          this.startOtpTimer();
+         localStorage.setItem('userDetails', JSON.stringify(response.result.data[0]));
+        }
+        ,
+        error: (error) => {
+          this.isLoading = false;
+          
+        }
+      });
+    }
+    
+
+  sendOTP(data: any) {
+    this.milkOrderService.sendOTP(data).subscribe({
+        next: (response) => {
+          this.isLoading = false; 
+          this.startOtpTimer();
+          this.successMessage = 'OTP sent successfully!';
+        }
+        ,
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = error.message || 'Failed to send OTP. Please try again.';
+        }
+      });
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+  
 
-    // Simulate API call to verify OTP
-    setTimeout(() => {
-      this.isLoading = false;
-      
-      // For demo purposes, accept any 6-digit OTP
-      if (this.otp.length === 6) {
-        this.successMessage = 'Login successful! Redirecting to dashboard...';
-        this.clearTimer();
-        
-        // Navigate to home page after successful login
-        setTimeout(() => {
-          this.router.navigate(['/home']);
-        }, 1500);
-        
-        console.log('User logged in successfully with mobile:', this.mobileNumber);
-      } else {
-        this.errorMessage = 'Invalid OTP. Please try again.';
-      }
-    }, 1500);
-  }
-
-  // Resend OTP
-  resendOtp(): void {
-    if (!this.canResendOtp) return;
-
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.otp = '';
-
-    // Simulate API call to resend OTP
-    setTimeout(() => {
-      this.isLoading = false;
-      this.successMessage = `OTP resent to +91 ${this.mobileNumber}`;
-      this.startOtpTimer();
-    }, 1000);
-  }
-
-  // Start OTP countdown timer
-  startOtpTimer(): void {
-    this.otpTimer = 30;
-    this.canResendOtp = false;
-    this.clearTimer();
-
-    this.timerInterval = setInterval(() => {
-      this.otpTimer--;
-      if (this.otpTimer <= 0) {
-        this.canResendOtp = true;
-        this.clearTimer();
-      }
-    }, 1000);
-  }
 
   // Clear timer
   clearTimer(): void {
@@ -125,6 +115,68 @@ export class LoginComponent {
     }
   }
 
+
+  // Verify OTP
+  verifyOtp() {
+    let userId = localStorage.getItem('userDetails') ? JSON.parse(localStorage.getItem('userDetails')!).userId : 0;
+    let otp = this.otp.trim();
+    this.milkOrderService.verifyOTP(userId, otp.toString()).subscribe({
+        next: (response) => {
+          if(response && response.result.data){
+            this.isLoading = false; 
+            this.router.navigate(['/home']);
+          } else{
+            this.errorMessage = 'Invalid OTP. Please try again.';
+            this.successMessage = '';
+          }
+        }
+        ,
+        error: (error) => {
+          this.isLoading = false;
+          
+        }
+      });
+  }
+
+  // Resend OTP
+  resendOtp(): void {
+    if (!this.canResendOtp) return;
+    
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.otp = '';
+    
+    // Reset timer state
+    this.otpTimer = 30;
+    this.canResendOtp = false;
+    
+    // Call the API to resend OTP
+   const otpData = {
+            "userId": localStorage.getItem('userDetails') ? JSON.parse(localStorage.getItem('userDetails')!).userId : 0,
+            "otp": null,
+            "validity": new Date(),
+            "createdOn": new Date()
+          };
+    this.sendOTP(otpData);
+  }
+
+  // Start OTP countdown timer
+  startOtpTimer(): void {
+    this.clearTimer(); // Clear any existing timer
+    this.otpTimer = 30;
+    this.canResendOtp = false;
+    
+    this.timerInterval = setInterval(() => {
+      this.otpTimer--;
+      
+      if (this.otpTimer <= 0) {
+        this.canResendOtp = true;
+        this.clearTimer();
+      }
+    }, 1000);
+  }
+
   // Go back to mobile number input
   goBack(): void {
     this.showOtpScreen = false;
@@ -132,13 +184,29 @@ export class LoginComponent {
     this.errorMessage = '';
     this.successMessage = '';
     this.clearTimer();
+    this.otpTimer = 30;
+    this.canResendOtp = false;
   }
 
   // Handle mobile number input (only allow digits)
   onMobileNumberInput(event: any): void {
+    // Remove all non-digit characters
     const value = event.target.value.replace(/\D/g, '');
+    // Limit to 10 digits maximum
     this.mobileNumber = value.slice(0, 10);
+    // Update the input field to reflect the cleaned value
+    event.target.value = this.mobileNumber;
+    // Clear any existing error message
     this.errorMessage = '';
+  }
+
+  // Prevent non-numeric characters from being typed
+  onKeyPress(event: KeyboardEvent): void {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Allow only digits (0-9), backspace, delete, tab, escape, enter
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+    }
   }
 
   // Handle OTP input (only allow digits)
