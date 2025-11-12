@@ -14,7 +14,8 @@ export class ApiInterceptor implements HttpInterceptor {
     const apiReq = req.clone({
       setHeaders: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-Api-Key': 'c123af47-dbd4-43aa-ae16-9bc82e710c4c'
       }
     });
 
