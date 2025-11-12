@@ -347,12 +347,19 @@
               <mat-table [dataSource]="tokenBalanceDataSource" matSort class="mat-elevation-1">
                 <ng-container matColumnDef="customerName">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
-                  <mat-cell *matCellDef="let balance">{{balance.userName}}</mat-cell>
+                  <mat-cell *matCellDef="let customer">{{customer.userName}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="balanceTokenQty">
-                  <mat-header-cell *matHeaderCellDef mat-sort-header>Balance Token Qty</mat-header-cell>
-                  <mat-cell *matCellDef="let balance" class="token-number">{{balance.tokenQty}}</mat-cell>
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Total Token Balance</mat-header-cell>
+                  <mat-cell *matCellDef="let customer" class="token-balance-cell">
+                    <div class="token-breakdown">
+                      <ng-container *ngFor="let token of customer.tokenDetails; let last = last">
+                        <span class="token-type-name">{{token.tokenType.toUpperCase()}}</span>: 
+                        <span class="token-qty-number">{{token.tokenQty}}</span><ng-container *ngIf="!last">, </ng-container>
+                      </ng-container>
+                    </div>
+                  </mat-cell>
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="tokenBalanceDisplayedColumns"></mat-header-row>

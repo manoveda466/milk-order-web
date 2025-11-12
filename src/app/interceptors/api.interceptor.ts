@@ -7,10 +7,13 @@ import { catchError, finalize } from 'rxjs/operators';
 export class ApiInterceptor implements HttpInterceptor {
   private activeRequests = 0;
 
+  constructor() {}
+
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     this.activeRequests++;
 
-    // Clone the request and add common headers
+
+    // Clone the request and add common headers including device info
     const apiReq = req.clone({
       setHeaders: {
         'Content-Type': 'application/json',

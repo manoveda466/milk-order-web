@@ -78,7 +78,7 @@ export class TokenDialogComponent {
       this.milkOrderService.createCustomerToken(tokenData).subscribe({
         next: (response) => {
           if(response && response.result.data){
-            this.milkOrderService.updateCumulativeToken({userId: formValue.userId, tokenQty: formValue.tokenQty, status: 'add'}).subscribe({
+            this.milkOrderService.updateCumulativeToken({userId: formValue.userId, tokenId: formValue.tokenType, tokenQty: formValue.tokenQty, status: 'add'}).subscribe({
               next: (res) => {
                 if(res && res.result.data){
                   this.dialogRef.close();

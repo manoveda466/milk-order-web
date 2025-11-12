@@ -19,6 +19,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UserDialogComponent } from '../user-dialog/user-dialog.component';
 import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
 import { MilkOrderService } from '../../services/milk-order.service';
@@ -136,7 +137,7 @@ export class HomeComponent {
   
   itemsPerPage = 5;
 
-  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService) {}
+  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer) {}
  
 
   ngOnInit() {
@@ -514,7 +515,7 @@ export class HomeComponent {
 
         if(response && response.result.data ){
           
-           this.milkOrderService.updateCumulativeToken({userId: userToken.userId, tokenQty: userToken.qty, status: 'edit'}).subscribe({
+           this.milkOrderService.updateCumulativeToken({userId: userToken.userId, tokenId: userToken.tokenId, tokenQty: userToken.qty, status: 'edit'}).subscribe({
             next: (res) => {
               if(res && res.result.data){
                 this.getTokenHistory();
@@ -594,7 +595,7 @@ export class HomeComponent {
 
     // Filter by customer name
     if (this.tokenBalanceFilters.customerName) {
-      filtered = filtered.filter(balance => balance.userName === this.tokenBalanceFilters.customerName);
+      filtered = filtered.filter(customer => customer.userName === this.tokenBalanceFilters.customerName);
     }
 
     this.filteredTokenBalance = filtered;
@@ -639,6 +640,35 @@ export class HomeComponent {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear().toString();
     return `${day}-${month}-${year}`;
+  }
+
+  // Method to calculate total token balance for a customer
+  getTotalTokenBalance(customer: any): number {
+    if (!customer.tokenDetails || customer.tokenDetails.length === 0) {
+      return 0;
+    }
+    return customer.tokenDetails.reduce((total: number, token: any) => total + (parseInt(token.tokenQty) || 0), 0);
+  }
+
+  // Method to get token breakdown text
+  getTokenBreakdownText(customer: any): string {
+    if (!customer.tokenDetails || customer.tokenDetails.length === 0) {
+      return 'No tokens';
+    }
+    return customer.tokenDetails
+      .map((token: any) => `${token.tokenType.toUpperCase()}: ${token.tokenQty}`)
+      .join(', ');
+  }
+
+  // Method to get token breakdown HTML with styling
+  getTokenBreakdownHTML(customer: any): SafeHtml {
+    if (!customer.tokenDetails || customer.tokenDetails.length === 0) {
+      return this.sanitizer.bypassSecurityTrustHtml('<span style="color: #999; font-style: italic;">No tokens</span>');
+    }
+    const htmlString = customer.tokenDetails
+      .map((token: any) => `<span style="font-weight: bold; color: #333;">${token.tokenType.toUpperCase()}</span>: <span style="font-weight: 600; color: #1976d2;">${token.tokenQty}</span>`)
+      .join(', ');
+    return this.sanitizer.bypassSecurityTrustHtml(htmlString);
   }
 
   
