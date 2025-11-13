@@ -540,13 +540,22 @@ export class HomeComponent {
     });
   }
 
-  selectMenuItem(menuId: string): void {
+  async selectMenuItem(menuId: string): Promise<void> {
     this.activeSection = menuId;
     
     // Update active state for menu items
     this.menuItems.forEach(item => {
       item.active = item.id === menuId;
     });
+    if(menuId === 'userDetails'){
+      await this.getCustomerDetails();
+    }else if(menuId === 'orderDetails'){
+      await this.getOrderDetails();
+    }else if(menuId === 'userTokenDetails'){
+      await this.getTokenHistory();
+    }else if(menuId === 'customerTokenBalance'){
+      await this.getCumulativeTokens();
+    }    
   }
 
   get activeMenuTitle(): string {
