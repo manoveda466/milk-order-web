@@ -234,7 +234,7 @@
                   <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
                   <mat-cell *matCellDef="let order">
                     <mat-chip-set>
-                      <mat-chip 
+                      <mat-chip style="margin-left: -8px !important;"
                         [color]="order.status === 'Delivered' ? 'accent' : order.status === 'Confirmed' ? 'primary' : order.status === 'Cancelled' ? 'warn' : 'primary'" 
                         selected>
                         {{order.status}}
