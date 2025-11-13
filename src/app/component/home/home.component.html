@@ -147,6 +147,17 @@
                 </mat-select>
               </mat-form-field>
               
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Token Type</mat-label>
+                <mat-select [(ngModel)]="orderFilters.tokenType" (ngModelChange)="filterOrders()">
+                  <mat-option value="">All Token Types</mat-option>
+                  <mat-option *ngFor="let tokenType of uniqueTokenTypes" [value]="tokenType">{{tokenType}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            
+            <!-- Clear Filter Button -->
+            <div class="filter-actions">
               <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn">
                 <mat-icon>clear</mat-icon>
                 Clear Filters
@@ -212,6 +223,11 @@
                 <ng-container matColumnDef="tokenQty">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Token Qty</mat-header-cell>
                   <mat-cell *matCellDef="let order">{{order.tokenQty}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="tokenType">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Token Type</mat-header-cell>
+                  <mat-cell *matCellDef="let order">{{order.tokenType}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="status">
@@ -336,7 +352,10 @@
                   <mat-option *ngFor="let customer of customerTokenBalance" [value]="customer.userName">{{customer.userName}}</mat-option>
                 </mat-select>
               </mat-form-field>
-              
+            </div>
+            
+            <!-- Clear Filter Button -->
+            <div class="filter-actions">
               <button mat-raised-button color="primary" (click)="clearTokenBalanceFilters()" class="clear-btn">
                 <mat-icon>clear</mat-icon>
                 Clear Filters

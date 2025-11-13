@@ -74,7 +74,7 @@ export class HomeComponent {
 
   // Column definitions
   userDisplayedColumns: string[] = ['name', 'mobileNo', 'area', 'address', 'isActive', 'actions'];
-  orderDisplayedColumns: string[] = ['select', 'id', 'userName', 'deliverDate', 'area', 'tokenQty', 'status', 'actions'];
+  orderDisplayedColumns: string[] = ['select', 'id', 'userName', 'deliverDate', 'area', 'tokenQty', 'tokenType', 'status', 'actions'];
   tokenDisplayedColumns: string[] = ['name', 'tokenQty', 'issueDate', 'tokenType', 'actions'];
   tokenBalanceDisplayedColumns: string[] = ['customerName', 'balanceTokenQty'];
 
@@ -86,7 +86,8 @@ export class HomeComponent {
   orderFilters = {
     deliveryDate: null as Date | null,
     area: '',
-    status: ''
+    status: '',
+    tokenType: ''
   };
 
   // Token balance filters
@@ -99,6 +100,7 @@ export class HomeComponent {
   filteredTokenBalance: any[] = [];
   uniqueAreas: string[] = [];
   uniqueStatuses: string[] = [];
+  uniqueTokenTypes: string[] = [];
 
   menuItems: MenuItem[] = [
     {
@@ -575,6 +577,11 @@ export class HomeComponent {
       filtered = filtered.filter(order => order.status === this.orderFilters.status);
     }
 
+    // Filter by token type
+    if (this.orderFilters.tokenType) {
+      filtered = filtered.filter(order => order.tokenType === this.orderFilters.tokenType);
+    }
+
     this.filteredOrderDetails = filtered;
     this.orderDataSource.data = this.filteredOrderDetails;
   }
@@ -583,7 +590,8 @@ export class HomeComponent {
     this.orderFilters = {
       deliveryDate: null,
       area: '',
-      status: ''
+      status: '',
+      tokenType: ''
     };
     this.filteredOrderDetails = [...this.orderDetails];
     this.orderDataSource.data = this.filteredOrderDetails;
@@ -620,6 +628,9 @@ export class HomeComponent {
     
     // Extract unique statuses for dropdown
     this.uniqueStatuses = [...new Set(this.orderDetails.map(order => order.status))].filter(status => status);
+    
+    // Extract unique token types for dropdown
+    this.uniqueTokenTypes = [...new Set(this.orderDetails.map(order => order.tokenType))].filter(tokenType => tokenType);
     
     
   }
