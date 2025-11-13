@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +36,6 @@ interface MenuItem {
     CommonModule,
     FormsModule,
     MatTableModule, 
-    MatPaginatorModule, 
     MatSortModule, 
     MatButtonModule, 
     MatIconModule, 
@@ -58,7 +56,6 @@ interface MenuItem {
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   activeSection: string = 'userDetails';
   isLoading: boolean = false;
@@ -95,12 +92,19 @@ export class HomeComponent {
     customerName: ''
   };
 
+  // Token history filters
+  tokenHistoryFilters = {
+    customerName: ''
+  };
+
   // Filtered data
   filteredOrderDetails: any[] = [];
   filteredTokenBalance: any[] = [];
+  filteredTokenHistory: any[] = [];
   uniqueAreas: string[] = [];
   uniqueStatuses: string[] = [];
   uniqueTokenTypes: string[] = [];
+  uniqueCustomerNames: string[] = [];
 
   menuItems: MenuItem[] = [
     {
@@ -129,16 +133,6 @@ export class HomeComponent {
     }
   ];
 
-  // Pagination properties
-  currentPage = {
-    userDetails: 1,
-    orderDetails: 1,
-    userTokenDetails: 1,
-    customerTokenBalance: 1
-  };
-  
-  itemsPerPage = 5;
-
   constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer) {}
  
 
@@ -153,18 +147,15 @@ export class HomeComponent {
     this.initializeFilters();
     this.orderDataSource.data = this.filteredOrderDetails;
     this.tokenBalanceDataSource.data = this.filteredTokenBalance;
+    this.tokenDataSource.data = this.filteredTokenHistory;
   }
 
   ngAfterViewInit() {
-    // Set up pagination and sorting after view init
-    if (this.paginator && this.sort) {
-      this.userDataSource.paginator = this.paginator;
+    // Set up sorting after view init
+    if (this.sort) {
       this.userDataSource.sort = this.sort;
-      this.orderDataSource.paginator = this.paginator;
       this.orderDataSource.sort = this.sort;
-      this.tokenDataSource.paginator = this.paginator;
       this.tokenDataSource.sort = this.sort;
-      this.tokenBalanceDataSource.paginator = this.paginator;
       this.tokenBalanceDataSource.sort = this.sort;
     }
   }
@@ -307,37 +298,6 @@ export class HomeComponent {
         return this.tokenBalanceDataSource;
       default:
         return this.userDataSource;
-    }
-  }
-  // Get paginated data
-  getPaginatedData(section: string, data: any[]): any[] {
-    const startIndex = (this.currentPage[section as keyof typeof this.currentPage] - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return data.slice(startIndex, endIndex);
-  }
-
-  // Get total pages
-  getTotalPages(dataLength: number): number {
-    return Math.ceil(dataLength / this.itemsPerPage);
-  }
-
-  // Navigation methods
-  goToPage(section: string, page: number): void {
-    this.currentPage[section as keyof typeof this.currentPage] = page;
-  }
-
-  previousPage(section: string): void {
-    const currentPageNum = this.currentPage[section as keyof typeof this.currentPage];
-    if (currentPageNum > 1) {
-      this.currentPage[section as keyof typeof this.currentPage] = currentPageNum - 1;
-    }
-  }
-
-  nextPage(section: string, totalItems: number): void {
-    const currentPageNum = this.currentPage[section as keyof typeof this.currentPage];
-    const totalPages = this.getTotalPages(totalItems);
-    if (currentPageNum < totalPages) {
-      this.currentPage[section as keyof typeof this.currentPage] = currentPageNum + 1;
     }
   }
 
@@ -488,8 +448,10 @@ export class HomeComponent {
   getTokenHistory(): void {
     this.milkOrderService.getTokenHistory().subscribe({
       next: (response) => {
-        this.tokenDataSource.data = response.result.data;
         this.userTokenDetails = response.result.data;
+        this.filteredTokenHistory = [...response.result.data]; // Update filtered data
+        this.tokenDataSource.data = this.filteredTokenHistory;
+        this.initializeFilters(); // Reinitialize filters with new data
       },
       error: (error) => {
         console.error('Error fetching token types:', error);
@@ -627,10 +589,32 @@ export class HomeComponent {
     this.tokenBalanceDataSource.data = this.filteredTokenBalance;
   }
 
+  // Token history filtering methods
+  filterTokenHistory(): void {
+    let filtered = [...this.userTokenDetails];
+
+    // Filter by customer name
+    if (this.tokenHistoryFilters.customerName) {
+      filtered = filtered.filter(token => token.userName === this.tokenHistoryFilters.customerName);
+    }
+
+    this.filteredTokenHistory = filtered;
+    this.tokenDataSource.data = this.filteredTokenHistory;
+  }
+
+  clearTokenHistoryFilters(): void {
+    this.tokenHistoryFilters = {
+      customerName: ''
+    };
+    this.filteredTokenHistory = [...this.userTokenDetails];
+    this.tokenDataSource.data = this.filteredTokenHistory;
+  }
+
   private initializeFilters(): void {
     // Initialize filtered data
     this.filteredOrderDetails = [...this.orderDetails];
     this.filteredTokenBalance = [...this.customerTokenBalance];
+    this.filteredTokenHistory = [...this.userTokenDetails];
     
     // Extract unique areas for dropdown
     this.uniqueAreas = [...new Set(this.orderDetails.map(order => order.areaName))].filter(area => area);
@@ -641,6 +625,8 @@ export class HomeComponent {
     // Extract unique token types for dropdown
     this.uniqueTokenTypes = [...new Set(this.orderDetails.map(order => order.tokenType))].filter(tokenType => tokenType);
     
+    // Extract unique customer names for token history dropdown
+    this.uniqueCustomerNames = [...new Set(this.userTokenDetails.map(token => token.userName))].filter(name => name);
     
   }
 

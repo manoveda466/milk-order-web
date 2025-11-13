@@ -106,8 +106,6 @@
                 <mat-header-row *matHeaderRowDef="userDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: userDisplayedColumns;"></mat-row>
               </mat-table>
-
-              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
             </div>
           </mat-card-content>
         </mat-card>
@@ -265,8 +263,6 @@
                 <mat-header-row *matHeaderRowDef="orderDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: orderDisplayedColumns;"></mat-row>
               </mat-table>
-
-              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
             </div>
           </mat-card-content>
         </mat-card>
@@ -287,6 +283,25 @@
           </mat-card-header>
           
           <mat-card-content>
+            <!-- Search and Filter Section -->
+            <div class="search-filters">
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Customer Name</mat-label>
+                <mat-select [(ngModel)]="tokenHistoryFilters.customerName" (ngModelChange)="filterTokenHistory()">
+                  <mat-option value="">All Customers</mat-option>
+                  <mat-option *ngFor="let customerName of uniqueCustomerNames" [value]="customerName">{{customerName}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            
+            <!-- Clear Filter Button -->
+            <div class="filter-actions">
+              <button mat-raised-button color="primary" (click)="clearTokenHistoryFilters()" class="clear-btn">
+                <mat-icon>clear</mat-icon>
+                Clear Filters
+              </button>
+            </div>
+            
             <div class="table-container">
               <mat-table [dataSource]="tokenDataSource" matSort class="mat-elevation-1">
                 <ng-container matColumnDef="name">
@@ -327,8 +342,6 @@
                 <mat-header-row *matHeaderRowDef="tokenDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: tokenDisplayedColumns;"></mat-row>
               </mat-table>
-
-              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
             </div>
           </mat-card-content>
         </mat-card>
@@ -384,8 +397,6 @@
                 <mat-header-row *matHeaderRowDef="tokenBalanceDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: tokenBalanceDisplayedColumns;"></mat-row>
               </mat-table>
-
-              <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
             </div>
           </mat-card-content>
         </mat-card>
