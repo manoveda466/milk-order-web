@@ -51,10 +51,10 @@ export class UserDialogComponent {
     return this.fb.group({
       userId: [''], // Hidden field for updates
       firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(1)]],
       mobileNo: ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
       area: ['', Validators.required],
-      address: ['', [Validators.required, Validators.minLength(10)]]
+      address: ['', [Validators.required, Validators.minLength(3)]]
     });
   }
 
@@ -193,10 +193,7 @@ export class UserDialogComponent {
     if (control?.hasError('required')) {
       return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required`;
     }
-    if (control?.hasError('minlength')) {
-      const minLength = control.errors?.['minlength']?.requiredLength;
-      return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least ${minLength} characters`;
-    }
+    
     if (control?.hasError('pattern') && fieldName === 'mobileNo') {
       return 'Please enter a valid 10-digit mobile number starting with 6-9';
     }
