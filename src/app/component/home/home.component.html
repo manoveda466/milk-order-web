@@ -43,6 +43,27 @@
                 <mat-icon>person_add</mat-icon>
                 Add Customer
               </button>
+              <button mat-raised-button color="accent" [matMenuTriggerFor]="exportMenu" [disabled]="isLoading" 
+                      matTooltip="Export customer data as PDF" style="margin-left: 8px;">
+                <mat-icon *ngIf="!isLoading">picture_as_pdf</mat-icon>
+                <mat-icon *ngIf="isLoading" class="loading-icon">hourglass_empty</mat-icon>
+                {{isLoading ? 'Exporting...' : 'Export PDF'}}
+                <mat-icon *ngIf="!isLoading">arrow_drop_down</mat-icon>
+              </button>
+              <mat-menu #exportMenu="matMenu">
+                <button mat-menu-item (click)="exportCustomersPDF('all')">
+                  <mat-icon>people</mat-icon>
+                  <span>Export All Customers</span>
+                </button>
+                <button mat-menu-item (click)="exportCustomersPDF('active')">
+                  <mat-icon>people_outline</mat-icon>
+                  <span>Export Active Only</span>
+                </button>
+                <button mat-menu-item (click)="exportCustomersPDF('inactive')">
+                  <mat-icon>person_off</mat-icon>
+                  <span>Export Inactive Only</span>
+                </button>
+              </mat-menu>
             </div>
           </mat-card-header>
           
@@ -117,6 +138,20 @@
           <mat-card-header>
             <mat-card-title>Order Management</mat-card-title>
             <mat-card-subtitle>Track and manage customer orders</mat-card-subtitle>
+            <div class="header-actions">
+              <button mat-raised-button color="accent" (click)="exportOrdersPDF()" [disabled]="isLoading" 
+                      matTooltip="Export currently displayed orders as PDF">
+                <mat-icon *ngIf="!isLoading">picture_as_pdf</mat-icon>
+                <mat-icon *ngIf="isLoading" class="loading-icon">hourglass_empty</mat-icon>
+                {{isLoading ? 'Exporting...' : 'Export PDF'}}
+              </button>
+              <div class="export-info" *ngIf="isOrdersFiltered()">
+                <small>Will export filtered orders ({{filteredOrderDetails.length}} records)</small>
+              </div>
+              <div class="export-info" *ngIf="!isOrdersFiltered()">
+                <small>Will export all orders ({{orderDetails.length}} records)</small>
+              </div>
+            </div>
           </mat-card-header>
           
           <mat-card-content>
@@ -156,7 +191,8 @@
             
             <!-- Clear Filter Button -->
             <div class="filter-actions">
-              <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn">
+              <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn" 
+                      [disabled]="!isOrdersFiltered()">
                 <mat-icon>clear</mat-icon>
                 Clear Filters
               </button>

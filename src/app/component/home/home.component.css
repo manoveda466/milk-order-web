@@ -1088,3 +1088,97 @@
   font-weight: 600;
   color: #1976d2;
 }
+
+/* Export PDF Button Styles */
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.header-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  text-transform: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.header-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.header-actions button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Loading animation for export button */
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Export menu styling */
+::ng-deep .mat-mdc-menu-panel {
+  min-width: 200px !important;
+}
+
+::ng-deep .mat-mdc-menu-item {
+  height: 44px !important;
+  line-height: 44px !important;
+}
+
+::ng-deep .mat-mdc-menu-item .mat-icon {
+  margin-right: 12px !important;
+  color: #666 !important;
+}
+
+::ng-deep .mat-mdc-menu-item:hover .mat-icon {
+  color: #1976d2 !important;
+}
+
+/* Section-specific export button spacing */
+.user-details-section .header-actions,
+.order-details-section .header-actions,
+.token-details-section .header-actions,
+.token-balance-section .header-actions {
+  margin-left: auto;
+  gap: 12px;
+}
+
+/* Ensure consistent button sizing across sections */
+.header-actions button {
+  min-width: 120px;
+  height: 40px;
+}
+
+/* Export info styling */
+.export-info {
+  margin-left: 8px;
+  padding: 4px 8px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  border-left: 3px solid #2196f3;
+}
+
+.export-info small {
+  color: #1565c0;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+/* Filter actions styling */
+.filter-actions {
+  margin-bottom: 16px;
+}

@@ -18,10 +18,13 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UserDialogComponent } from '../user-dialog/user-dialog.component';
 import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
 import { MilkOrderService } from '../../services/milk-order.service';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface MenuItem {
   id: string;
@@ -50,7 +53,8 @@ interface MenuItem {
     MatNativeDateModule,
     MatCheckboxModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatTooltipModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
@@ -636,6 +640,541 @@ export class HomeComponent {
     this.getCurrentDataSource().filter = filterValue.trim().toLowerCase();
   }
 
+  isOrdersFiltered(): boolean {
+    return !!(this.orderFilters.deliveryDate || 
+              this.orderFilters.area || 
+              this.orderFilters.status || 
+              this.orderFilters.tokenType);
+  }
+
+  exportOrdersPDF(): void {
+    try {
+      // Show loading state
+      this.isLoading = true;
+      
+      // Create a new jsPDF instance
+      const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape for more columns
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Always use the currently filtered/displayed orders
+      const filteredOrders = this.filteredOrderDetails;
+      const isFiltered = this.isOrdersFiltered();
+      let reportTitle = isFiltered ? 'Filtered Orders Report' : 'All Orders Report';
+      
+      // Add filter details to title if filters are applied
+      if (isFiltered) {
+        const filterDetails = [];
+        if (this.orderFilters.deliveryDate) {
+          filterDetails.push(`Date: ${this.orderFilters.deliveryDate.toLocaleDateString()}`);
+        }
+        if (this.orderFilters.area) {
+          filterDetails.push(`Area: ${this.orderFilters.area}`);
+        }
+        if (this.orderFilters.status) {
+          filterDetails.push(`Status: ${this.orderFilters.status}`);
+        }
+        if (this.orderFilters.tokenType) {
+          filterDetails.push(`Token: ${this.orderFilters.tokenType}`);
+        }
+        if (filterDetails.length > 0) {
+          reportTitle += ` (${filterDetails.join(', ')})`;
+        }
+      }
+      
+      // Check if there are any orders to export
+      if (filteredOrders.length === 0) {
+        const filterText = isFiltered ? 'filtered orders' : 'orders';
+        this.snackBar.open(`No ${filterText} found to export!`, 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['warning-snackbar']
+        });
+        this.isLoading = false;
+        return;
+      }
+      
+      // Set up the document title and header
+      pdf.setFontSize(22);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(44, 62, 80); // Dark blue-gray
+      pdf.text(reportTitle, pageWidth / 2, 25, { align: 'center' });
+      
+      // Add a line under the title
+      pdf.setDrawColor(52, 152, 219); // Blue
+      pdf.setLineWidth(0.5);
+      pdf.line(20, 30, pageWidth - 20, 30);
+      
+      // Add date and summary info
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(100, 100, 100);
+      const currentDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      pdf.text(`Generated on: ${currentDate}`, 20, 40);
+      
+      // Calculate status counts
+      const confirmedOrders = filteredOrders.filter(o => o.status === 'Confirmed').length;
+      const deliveredOrders = filteredOrders.filter(o => o.status === 'Delivered').length;
+      const cancelledOrders = filteredOrders.filter(o => o.status === 'Cancelled').length;
+      
+      pdf.text(`Confirmed: ${confirmedOrders} | Delivered: ${deliveredOrders} | Cancelled: ${cancelledOrders}`, pageWidth - 20, 40, { align: 'right' });
+      
+      // Table setup - landscape layout with more columns
+      const headers = ['Order ID', 'Customer Name', 'Delivery Date', 'Area', 'Token Qty', 'Token Type', 'Status'];
+      const columnWidths = [25, 50, 35, 35, 25, 35, 25];
+      const tableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+      const startX = (pageWidth - tableWidth) / 2;
+      let startY = 55;
+      
+      // Draw table headers
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFillColor(52, 152, 219); // Blue header
+      pdf.setTextColor(255, 255, 255); // White text
+      pdf.rect(startX, startY - 6, tableWidth, 10, 'F');
+      
+      // Draw header borders
+      pdf.setDrawColor(255, 255, 255);
+      pdf.setLineWidth(0.2);
+      let currentX = startX;
+      headers.forEach((header, index) => {
+        if (index > 0) {
+          pdf.line(currentX, startY - 6, currentX, startY + 4);
+        }
+        pdf.text(header, currentX + 2, startY);
+        currentX += columnWidths[index];
+      });
+      
+      // Draw table data
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(60, 60, 60); // Dark gray text
+      let currentY = startY + 12;
+      const rowHeight = 10;
+      
+      filteredOrders.forEach((order, index) => {
+        // Check if we need a new page
+        if (currentY > pageHeight - 40) {
+          pdf.addPage();
+          currentY = 30;
+          
+          // Redraw headers on new page
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFillColor(52, 152, 219);
+          pdf.setTextColor(255, 255, 255);
+          pdf.rect(startX, currentY - 6, tableWidth, 10, 'F');
+          
+          let headerX = startX;
+          headers.forEach((header, headerIndex) => {
+            if (headerIndex > 0) {
+              pdf.line(headerX, currentY - 6, headerX, currentY + 4);
+            }
+            pdf.text(header, headerX + 2, currentY);
+            headerX += columnWidths[headerIndex];
+          });
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(60, 60, 60);
+          currentY += 12;
+        }
+        
+        // Draw row background (alternating colors)
+        if (index % 2 === 0) {
+          pdf.setFillColor(248, 249, 250);
+          pdf.rect(startX, currentY - 6, tableWidth, rowHeight, 'F');
+        }
+        
+        // Draw row borders
+        pdf.setDrawColor(220, 220, 220);
+        pdf.setLineWidth(0.1);
+        pdf.rect(startX, currentY - 6, tableWidth, rowHeight, 'S');
+        
+        // Order data
+        const orderId = `#${order.orderId}`;
+        const customerName = order.userName || 'N/A';
+        const deliveryDate = order.orderDate ? this.formatDateToDDMMMYYYY(new Date(order.orderDate)) : 'N/A';
+        const area = order.areaName || 'N/A';
+        const tokenQty = order.tokenQty?.toString() || '0';
+        const tokenType = order.tokenType || 'N/A';
+        const status = order.status || 'Unknown';
+        
+        currentX = startX;
+        
+        // Helper function to wrap text
+        const wrapText = (text: string, maxWidth: number): string => {
+          if (pdf.getTextWidth(text) <= maxWidth - 4) {
+            return text;
+          }
+          let wrapped = text;
+          while (pdf.getTextWidth(wrapped + '...') > maxWidth - 4 && wrapped.length > 0) {
+            wrapped = wrapped.slice(0, -1);
+          }
+          return wrapped + (wrapped.length < text.length ? '...' : '');
+        };
+        
+        // Draw vertical separators and text
+        const orderData = [orderId, customerName, deliveryDate, area, tokenQty, tokenType, status];
+        orderData.forEach((cellData, colIndex) => {
+          if (colIndex > 0) {
+            pdf.setDrawColor(220, 220, 220);
+            pdf.line(currentX, currentY - 6, currentX, currentY + 4);
+          }
+          
+          // Color code status column
+          if (colIndex === 6) { // Status column
+            switch (status) {
+              case 'Confirmed':
+                pdf.setTextColor(25, 118, 210); // Blue
+                break;
+              case 'Delivered':
+                pdf.setTextColor(34, 139, 34); // Green
+                break;
+              case 'Cancelled':
+                pdf.setTextColor(220, 20, 60); // Red
+                break;
+              default:
+                pdf.setTextColor(100, 100, 100); // Gray
+            }
+          } else {
+            pdf.setTextColor(60, 60, 60);
+          }
+          
+          const wrappedText = wrapText(cellData, columnWidths[colIndex]);
+          pdf.text(wrappedText, currentX + 2, currentY);
+          currentX += columnWidths[colIndex];
+        });
+        
+        currentY += rowHeight;
+      });
+      
+      // Add summary footer
+      const summaryY = currentY + 10;
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(52, 152, 219);
+      pdf.text('Summary:', startX, summaryY);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(80, 80, 80);
+      pdf.text(`Total Orders: ${filteredOrders.length}`, startX, summaryY + 8);
+      pdf.text(`Confirmed: ${confirmedOrders}`, startX + 60, summaryY + 8);
+      pdf.text(`Delivered: ${deliveredOrders}`, startX + 120, summaryY + 8);
+      pdf.text(`Cancelled: ${cancelledOrders}`, startX + 180, summaryY + 8);
+      
+      // Calculate total token quantities by type
+      const tokenSummary = filteredOrders.reduce((acc: any, order: any) => {
+        const tokenType = order.tokenType || 'Unknown';
+        const qty = parseInt(order.tokenQty) || 0;
+        acc[tokenType] = (acc[tokenType] || 0) + qty;
+        return acc;
+      }, {});
+      
+      if (Object.keys(tokenSummary).length > 0) {
+        pdf.text('Token Summary:', startX, summaryY + 16);
+        let tokenX = startX;
+        Object.entries(tokenSummary).forEach(([type, qty]) => {
+          pdf.text(`${type}: ${qty}`, tokenX, summaryY + 24);
+          tokenX += 60;
+        });
+      }
+      
+      // Add page numbers and footer to all pages
+      const totalPages = pdf.internal.pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(120, 120, 120);
+        
+        // Footer line
+        pdf.setDrawColor(220, 220, 220);
+        pdf.line(20, pageHeight - 20, pageWidth - 20, pageHeight - 20);
+        
+        // Page number and company info
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+        pdf.text('Milk Order Management System', 20, pageHeight - 10);
+      }
+      
+      // Save the PDF
+      const filterSuffix = isFiltered ? 'filtered' : 'all';
+      const fileName = `orders_${filterSuffix}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+      
+      // Show success message
+      const filterText = isFiltered ? 'Filtered' : 'All';
+      this.snackBar.open(`${filterText} orders PDF exported successfully! (${filteredOrders.length} orders)`, 'Close', {
+        duration: 4000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['success-snackbar']
+      });
+      
+    } catch (error) {
+      console.error('Error exporting orders PDF:', error);
+      this.snackBar.open('Error exporting orders PDF. Please try again.', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar']
+      });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  exportCustomersPDF(filter: 'all' | 'active' | 'inactive' = 'all'): void {
+    try {
+      // Show loading state
+      this.isLoading = true;
+      
+      // Create a new jsPDF instance
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Filter data based on the selected filter
+      let filteredCustomers = this.userDetails;
+      let reportTitle = 'Customer Details Report';
+      
+      switch (filter) {
+        case 'active':
+          filteredCustomers = this.userDetails.filter(c => c.isActive);
+          reportTitle = 'Active Customers Report';
+          break;
+        case 'inactive':
+          filteredCustomers = this.userDetails.filter(c => !c.isActive);
+          reportTitle = 'Inactive Customers Report';
+          break;
+        default:
+          filteredCustomers = this.userDetails;
+          reportTitle = 'All Customers Report';
+      }
+      
+      // Check if there are any customers to export
+      if (filteredCustomers.length === 0) {
+        const filterText = filter === 'all' ? 'customers' : filter === 'active' ? 'active customers' : 'inactive customers';
+        this.snackBar.open(`No ${filterText} found to export!`, 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['warning-snackbar']
+        });
+        this.isLoading = false;
+        return;
+      }
+      
+      // Set up the document title and header
+      pdf.setFontSize(22);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(44, 62, 80); // Dark blue-gray
+      pdf.text(reportTitle, pageWidth / 2, 25, { align: 'center' });
+      
+      // Add a line under the title
+      pdf.setDrawColor(52, 152, 219); // Blue
+      pdf.setLineWidth(0.5);
+      pdf.line(20, 30, pageWidth - 20, 30);
+      
+      // Add date and summary info
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(100, 100, 100);
+      const currentDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      pdf.text(`Generated on: ${currentDate}`, 20, 40);
+      
+      const activeCustomers = filteredCustomers.filter(c => c.isActive).length;
+      const inactiveCustomers = filteredCustomers.length - activeCustomers;
+      pdf.text(`Active Customers: ${activeCustomers} | Inactive: ${inactiveCustomers}`, pageWidth - 20, 40, { align: 'right' });
+      
+      // Table setup
+      const headers = ['Customer Name', 'Mobile No', 'Area', 'Address', 'Status'];
+      const columnWidths = [45, 30, 25, 65, 25];
+      const tableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+      const startX = (pageWidth - tableWidth) / 2;
+      let startY = 55;
+      
+      // Draw table headers
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFillColor(52, 152, 219); // Blue header
+      pdf.setTextColor(255, 255, 255); // White text
+      pdf.rect(startX, startY - 6, tableWidth, 10, 'F');
+      
+      // Draw header borders
+      pdf.setDrawColor(255, 255, 255);
+      pdf.setLineWidth(0.2);
+      let currentX = startX;
+      headers.forEach((header, index) => {
+        if (index > 0) {
+          pdf.line(currentX, startY - 6, currentX, startY + 4);
+        }
+        pdf.text(header, currentX + 2, startY);
+        currentX += columnWidths[index];
+      });
+      
+      // Draw table data
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(60, 60, 60); // Dark gray text
+      let currentY = startY + 12;
+      const rowHeight = 10;
+      
+      filteredCustomers.forEach((customer, index) => {
+        // Check if we need a new page
+        if (currentY > pageHeight - 40) {
+          pdf.addPage();
+          currentY = 30;
+          
+          // Redraw headers on new page
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFillColor(52, 152, 219);
+          pdf.setTextColor(255, 255, 255);
+          pdf.rect(startX, currentY - 6, tableWidth, 10, 'F');
+          
+          let headerX = startX;
+          headers.forEach((header, headerIndex) => {
+            if (headerIndex > 0) {
+              pdf.line(headerX, currentY - 6, headerX, currentY + 4);
+            }
+            pdf.text(header, headerX + 2, currentY);
+            headerX += columnWidths[headerIndex];
+          });
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(60, 60, 60);
+          currentY += 12;
+        }
+        
+        // Draw row background (alternating colors)
+        if (index % 2 === 0) {
+          pdf.setFillColor(248, 249, 250);
+          pdf.rect(startX, currentY - 6, tableWidth, rowHeight, 'F');
+        }
+        
+        // Draw row borders
+        pdf.setDrawColor(220, 220, 220);
+        pdf.setLineWidth(0.1);
+        pdf.rect(startX, currentY - 6, tableWidth, rowHeight, 'S');
+        
+        // Customer data
+        const customerName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+        const mobile = customer.mobile || 'N/A';
+        const area = customer.areaName || 'N/A';
+        const address = customer.address || 'N/A';
+        const status = customer.isActive ? 'Active' : 'Inactive';
+        
+        currentX = startX;
+        
+        // Helper function to wrap text
+        const wrapText = (text: string, maxWidth: number): string => {
+          if (pdf.getTextWidth(text) <= maxWidth - 4) {
+            return text;
+          }
+          let wrapped = text;
+          while (pdf.getTextWidth(wrapped + '...') > maxWidth - 4 && wrapped.length > 0) {
+            wrapped = wrapped.slice(0, -1);
+          }
+          return wrapped + (wrapped.length < text.length ? '...' : '');
+        };
+        
+        // Draw vertical separators and text
+        headers.forEach((header, colIndex) => {
+          if (colIndex > 0) {
+            pdf.setDrawColor(220, 220, 220);
+            pdf.line(currentX, currentY - 6, currentX, currentY + 4);
+          }
+          
+          let cellText = '';
+          switch (colIndex) {
+            case 0: cellText = customerName; break;
+            case 1: cellText = mobile; break;
+            case 2: cellText = area; break;
+            case 3: cellText = address; break;
+            case 4: cellText = status; break;
+          }
+          
+          // Color code status column
+          if (colIndex === 4) {
+            if (status === 'Active') {
+              pdf.setTextColor(34, 139, 34); // Forest green
+            } else {
+              pdf.setTextColor(220, 20, 60); // Crimson red
+            }
+          } else {
+            pdf.setTextColor(60, 60, 60);
+          }
+          
+          const wrappedText = wrapText(cellText, columnWidths[colIndex]);
+          pdf.text(wrappedText, currentX + 2, currentY);
+          currentX += columnWidths[colIndex];
+        });
+        
+        currentY += rowHeight;
+      });
+      
+      // Add summary footer
+      const summaryY = currentY + 10;
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(52, 152, 219);
+      pdf.text('Summary:', startX, summaryY);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(80, 80, 80);
+      pdf.text(`Total Customers: ${filteredCustomers.length}`, startX, summaryY + 8);
+      pdf.text(`Active: ${activeCustomers}`, startX + 60, summaryY + 8);
+      pdf.text(`Inactive: ${inactiveCustomers}`, startX + 100, summaryY + 8);
+      
+      // Add page numbers and footer to all pages
+      const totalPages = pdf.internal.pages.length - 1; // Subtract 1 because jsPDF includes a blank page
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(120, 120, 120);
+        
+        // Footer line
+        pdf.setDrawColor(220, 220, 220);
+        pdf.line(20, pageHeight - 20, pageWidth - 20, pageHeight - 20);
+        
+        // Page number and company info
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+        pdf.text('Milk Order Management System', 20, pageHeight - 10);
+      }
+      
+      // Save the PDF
+      const filterSuffix = filter === 'all' ? 'all' : filter;
+      const fileName = `customers_${filterSuffix}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+      
+      // Show success message
+      const filterText = filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Inactive';
+      this.snackBar.open(`${filterText} customers PDF exported successfully! (${filteredCustomers.length} customers)`, 'Close', {
+        duration: 4000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['success-snackbar']
+      });
+      
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      this.snackBar.open('Error exporting PDF. Please try again.', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar']
+      });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
   logout(): void {
     localStorage.removeItem('userDetails');
     this.router.navigate(['/login']);
@@ -644,6 +1183,15 @@ export class HomeComponent {
   private formatDateToDDMMYYYY(date: Date): string {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString();
+    return `${day}-${month}-${year}`;
+  }
+
+  private formatDateToDDMMMYYYY(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[date.getMonth()];
     const year = date.getFullYear().toString();
     return `${day}-${month}-${year}`;
   }
