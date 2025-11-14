@@ -438,47 +438,7 @@
         </mat-card>
       </div>
 
-      <!-- View Graph Section -->
-      <div *ngIf="activeSection === 'viewGraph'" class="section graph-section">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Order Progress Analytics</mat-card-title>
-            <mat-card-subtitle>Order status progress by date (Confirmed, Delivered, Cancelled)</mat-card-subtitle>
-          </mat-card-header>
-          
-          <mat-card-content>
-            <div class="single-chart-container">
-              <div class="chart-wrapper-large">
-                <canvas baseChart
-                        [data]="orderProgressChartData"
-                        [type]="orderProgressChartType"
-                        [options]="orderProgressChartOptions">
-                </canvas>
-              </div>
-            </div>
-            
-            <!-- Quick Summary -->
-            <div class="chart-summary">
-              <div class="summary-item">
-                <span class="summary-label">Total Orders:</span>
-                <span class="summary-value">{{orderDetails.length}}</span>
-              </div>
-              <div class="summary-item confirmed">
-                <span class="summary-label">Confirmed:</span>
-                <span class="summary-value">{{getOrdersByStatus('Confirmed').length}}</span>
-              </div>
-              <div class="summary-item delivered">
-                <span class="summary-label">Delivered:</span>
-                <span class="summary-value">{{getOrdersByStatus('Delivered').length}}</span>
-              </div>
-              <div class="summary-item cancelled">
-                <span class="summary-label">Cancelled:</span>
-                <span class="summary-value">{{getOrdersByStatus('Cancelled').length}}</span>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+
     </div>
   </div>
 </div>

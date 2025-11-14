@@ -25,8 +25,6 @@ import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
 import { MilkOrderService } from '../../services/milk-order.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { BaseChartDirective } from 'ng2-charts';
-import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
 
 interface MenuItem {
   id: string;
@@ -56,8 +54,7 @@ interface MenuItem {
     MatCheckboxModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatTooltipModule,
-    BaseChartDirective
+    MatTooltipModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
@@ -137,82 +134,12 @@ export class HomeComponent {
       title: 'Customer Token Balance',
       icon: '💰',
       active: false
-    },
-    {
-      id: 'viewGraph',
-      title: 'View Graph',
-      icon: '📊',
-      active: false
     }
   ];
 
-  // Chart properties
-  public orderProgressChartData: ChartData<'bar'> = {
-    labels: [],
-    datasets: [
-      {
-        label: 'Confirmed',
-        data: [],
-        backgroundColor: '#2196F3',
-        borderColor: '#1976D2',
-        borderWidth: 1
-      },
-      {
-        label: 'Delivered',
-        data: [],
-        backgroundColor: '#4CAF50',
-        borderColor: '#388E3C',
-        borderWidth: 1
-      },
-      {
-        label: 'Cancelled',
-        data: [],
-        backgroundColor: '#FF5722',
-        borderColor: '#D32F2F',
-        borderWidth: 1
-      }
-    ]
-  };
-  public orderProgressChartType: ChartType = 'bar';
-  public orderProgressChartOptions: ChartConfiguration['options'] = {
-    indexAxis: 'y', // This makes it horizontal
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        display: true
-      },
-      title: {
-        display: true,
-        text: 'Order Progress by Date'
-      }
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Order Count'
-        },
-        grid: {
-          display: true
-        }
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Dates'
-        },
-        grid: {
-          display: false
-        }
-      }
-    }
-  };
+
 
   constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer) {
-    Chart.register(...registerables);
   }
  
 
@@ -250,10 +177,7 @@ export class HomeComponent {
           this.orderDataSource.data = this.filteredOrderDetails;
           this.initializeFilters(); // Reinitialize filters with new data
           
-          // Generate chart data if we're on the graph section
-          if (this.activeSection === 'viewGraph') {
-            this.generateChartData();
-          }
+
         }
       }
       ,
@@ -602,8 +526,6 @@ export class HomeComponent {
       await this.getTokenHistory();
     }else if(menuId === 'customerTokenBalance'){
       await this.getCumulativeTokens();
-    }else if(menuId === 'viewGraph'){
-      await this.generateChartData();
     }    
   }
 
@@ -1279,71 +1201,7 @@ export class HomeComponent {
     return `${day}-${month}-${year}`;
   }
 
-  generateChartData(): void {
-    if (this.orderDetails.length === 0) {
-      // If no order data, get the data first
-      this.getOrderDetails();
-      return;
-    }
 
-    // Generate Order Progress Chart Data by Date
-    const dateCounts: {[key: string]: {confirmed: number, delivered: number, cancelled: number}} = {};
-    
-    this.orderDetails.forEach(order => {
-      if (order.orderDate) {
-        const dateKey = this.formatDateToDDMMMYYYY(new Date(order.orderDate));
-        if (!dateCounts[dateKey]) {
-          dateCounts[dateKey] = { confirmed: 0, delivered: 0, cancelled: 0 };
-        }
-        
-        const status = order.status?.toLowerCase() || 'unknown';
-        if (status === 'confirmed') {
-          dateCounts[dateKey].confirmed++;
-        } else if (status === 'delivered') {
-          dateCounts[dateKey].delivered++;
-        } else if (status === 'cancelled') {
-          dateCounts[dateKey].cancelled++;
-        }
-      }
-    });
-
-    // Sort dates chronologically (most recent first for better visibility)
-    const sortedDates = Object.keys(dateCounts).sort((a, b) => {
-      const dateA = this.parseDateFromDDMMMYYYY(a);
-      const dateB = this.parseDateFromDDMMMYYYY(b);
-      return dateB.getTime() - dateA.getTime(); // Most recent first
-    });
-
-    // Take only the most recent 10 dates for better readability
-    const recentDates = sortedDates.slice(0, 10);
-
-    this.orderProgressChartData = {
-      labels: recentDates,
-      datasets: [
-        {
-          label: 'Confirmed',
-          data: recentDates.map(date => dateCounts[date].confirmed),
-          backgroundColor: '#2196F3',
-          borderColor: '#1976D2',
-          borderWidth: 1
-        },
-        {
-          label: 'Delivered',
-          data: recentDates.map(date => dateCounts[date].delivered),
-          backgroundColor: '#4CAF50',
-          borderColor: '#388E3C',
-          borderWidth: 1
-        },
-        {
-          label: 'Cancelled',
-          data: recentDates.map(date => dateCounts[date].cancelled),
-          backgroundColor: '#FF5722',
-          borderColor: '#D32F2F',
-          borderWidth: 1
-        }
-      ]
-    };
-  }
 
   private parseDateFromDDMMMYYYY(dateString: string): Date {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
