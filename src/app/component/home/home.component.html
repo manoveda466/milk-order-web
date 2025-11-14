@@ -17,12 +17,12 @@
       </ul>
     </nav>
 
-    <div class="sidebar-footer">
+    <!-- <div class="sidebar-footer">
       <button class="logout-btn" (click)="logout()">
         <span class="logout-icon">🚪</span>
         Logout
       </button>
-    </div>
+    </div> -->
   </div>
 
   <!-- Main Content Area -->
@@ -229,6 +229,7 @@
                   <mat-cell *matCellDef="let order">
                     <mat-checkbox 
                       [checked]="isOrderSelected(order.orderId)"
+                      [disabled]="order.status === 'Cancelled' || order.status === 'Delivered'"
                       (change)="toggleOrderSelection(order.orderId)">
                     </mat-checkbox>
                   </mat-cell>
@@ -280,19 +281,21 @@
                 <ng-container matColumnDef="actions">
                   <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
                   <mat-cell *matCellDef="let order">
-                    <button mat-icon-button [matMenuTriggerFor]="orderMenu">
-                      <mat-icon>more_vert</mat-icon>
-                    </button>
-                    <mat-menu #orderMenu="matMenu">
-                      <button mat-menu-item (click)="deliverOrder(order.orderId)" *ngIf="order.status !== 'Delivered'">
-                        <mat-icon>local_shipping</mat-icon>
-                        <span>Deliver Order</span>
+                    <ng-container *ngIf="order.status !== 'Cancelled' && order.status !== 'Delivered'">
+                      <button mat-icon-button [matMenuTriggerFor]="orderMenu">
+                        <mat-icon>more_vert</mat-icon>
                       </button>
-                      <button mat-menu-item (click)="cancelOrder(order.orderId)" *ngIf="order.status !== 'Cancelled'">
-                        <mat-icon>cancel</mat-icon>
-                        <span>Cancel Order</span>
-                      </button>
-                    </mat-menu>
+                      <mat-menu #orderMenu="matMenu">
+                        <button mat-menu-item (click)="deliverOrder(order.orderId)" *ngIf="order.status !== 'Delivered'">
+                          <mat-icon>local_shipping</mat-icon>
+                          <span>Deliver Order</span>
+                        </button>
+                        <button mat-menu-item (click)="cancelOrder(order.orderId)" *ngIf="order.status !== 'Cancelled'">
+                          <mat-icon>cancel</mat-icon>
+                          <span>Cancel Order</span>
+                        </button>
+                      </mat-menu>
+                    </ng-container>
                   </mat-cell>
                 </ng-container>
 

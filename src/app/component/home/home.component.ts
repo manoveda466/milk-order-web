@@ -334,14 +334,21 @@ export class HomeComponent {
     }
   }
 
-  cancelOrder(orderId: string): void {
+  async cancelOrder(orderId: string) {
     const order = this.orderDetails.find(o => o.orderId === orderId);
     if (order) {
 
-      this.milkOrderService.updateOrderStatus({ orderId: orderId, status: 'Cancelled', updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString() }).subscribe({
+      await this.milkOrderService.updateOrderStatus({ orderId: orderId, status: 'Cancelled', updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString() }).subscribe({
         next: (response) => {
           if(response && response.result.data ){
-              this.getOrderDetails();
+            this.milkOrderService.updateCumulativeToken({userId: order.userId, tokenId: order.tokenId, tokenQty: order.tokenQty, status: 'add'}).subscribe({
+            next: (res) => {
+              if(res && res.result.data){
+                this.getOrderDetails();
+              } 
+            }  
+             });
+              
           }
         }
       });
@@ -357,6 +364,14 @@ export class HomeComponent {
 
   // Order selection methods
   toggleOrderSelection(orderId: string): void {
+    // Find the order to check its status
+    const order = this.orderDetails.find(o => o.orderId === orderId);
+    
+    // Don't allow selection of cancelled or delivered orders
+    if (order && (order.status === 'Cancelled' || order.status === 'Delivered')) {
+      return;
+    }
+    
     if (this.selectedOrders.has(orderId)) {
       this.selectedOrders.delete(orderId);
     } else {
@@ -367,21 +382,26 @@ export class HomeComponent {
   toggleAllOrders(): void {
     const allSelected = this.isAllOrdersSelected();
     if (allSelected) {
-      // Clear only the currently visible/filtered orders
+      // Clear only the currently visible/filtered orders (excluding cancelled and delivered orders)
       this.filteredOrderDetails.forEach(order => {
-        this.selectedOrders.delete(order.orderId);
+        if (order.status !== 'Cancelled' && order.status !== 'Delivered') {
+          this.selectedOrders.delete(order.orderId);
+        }
       });
     } else {
-      // Select all currently visible/filtered orders
+      // Select all currently visible/filtered orders (excluding cancelled and delivered orders)
       this.filteredOrderDetails.forEach(order => {
-        this.selectedOrders.add(order.orderId);
+        if (order.status !== 'Cancelled' && order.status !== 'Delivered') {
+          this.selectedOrders.add(order.orderId);
+        }
       });
     }
   }
 
   isAllOrdersSelected(): boolean {
-    return this.filteredOrderDetails.length > 0 && 
-           this.filteredOrderDetails.every(order => this.selectedOrders.has(order.orderId));
+    const selectableOrders = this.filteredOrderDetails.filter(order => order.status !== 'Cancelled' && order.status !== 'Delivered');
+    return selectableOrders.length > 0 && 
+           selectableOrders.every(order => this.selectedOrders.has(order.orderId));
   }
 
   isOrderSelected(orderId: string): boolean {
