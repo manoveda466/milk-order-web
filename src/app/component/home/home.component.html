@@ -92,7 +92,7 @@
 
                 <ng-container matColumnDef="pin">
                   <mat-header-cell *matHeaderCellDef>Login PIN</mat-header-cell>
-                  <mat-cell *matCellDef="let user" class="pin-cell">{{user.pin ? 'user.pin' : 'Not Set'}}</mat-cell>
+                  <mat-cell *matCellDef="let user" class="pin-cell">{{user.pin}} ? {{user.pin}} : 'Not Set'}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="isActive">
