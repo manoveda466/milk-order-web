@@ -48,7 +48,7 @@ export class LoginComponent implements OnDestroy {
       next: (response) => {
         if(response && response.result.data.length > 0 && response.result.data[0].userId > 0){
           this.showOtpScreen = true;
-          this.successMessage = `User is valid. Sending OTP to +91 ${this.mobileNumber}`;
+          //this.successMessage = `User is valid. Sending OTP to +91 ${this.mobileNumber}`;
           this.getUserDetailsById(response.result.data[0].userId);
           
           const otpData = {
@@ -57,7 +57,7 @@ export class LoginComponent implements OnDestroy {
             "validity": new Date(),
             "createdOn": new Date()
           };
-          this.sendOTP(otpData);
+          //this.sendOTP(otpData);
           this.isLoading = false;
         }
         else{
@@ -94,7 +94,7 @@ export class LoginComponent implements OnDestroy {
         next: (response) => {
           this.isLoading = false; 
           this.startOtpTimer();
-          this.successMessage = 'OTP sent successfully!';
+         this.successMessage = 'OTP sent successfully!';
         }
         ,
         error: (error) => {
@@ -126,7 +126,7 @@ export class LoginComponent implements OnDestroy {
             this.isLoading = false; 
             this.router.navigate(['/home']);
           } else{
-            this.errorMessage = 'Invalid OTP. Please try again.';
+            this.errorMessage = 'Invalid PIN. Please try again.';
             this.successMessage = '';
           }
         }
@@ -158,7 +158,7 @@ export class LoginComponent implements OnDestroy {
             "validity": new Date(),
             "createdOn": new Date()
           };
-    this.sendOTP(otpData);
+    //this.sendOTP(otpData);
   }
 
   // Start OTP countdown timer

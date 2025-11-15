@@ -74,7 +74,7 @@ export class HomeComponent {
   tokenBalanceDataSource = new MatTableDataSource();
 
   // Column definitions
-  userDisplayedColumns: string[] = ['name', 'mobileNo', 'area', 'address', 'isActive', 'actions'];
+  userDisplayedColumns: string[] = ['name', 'mobileNo', 'area', 'address', 'pin', 'isActive', 'actions'];
   orderDisplayedColumns: string[] = ['select', 'id', 'userName', 'deliverDate', 'area', 'tokenQty', 'tokenType', 'status', 'actions'];
   tokenDisplayedColumns: string[] = ['name', 'tokenQty', 'issueDate', 'tokenType', 'actions'];
   tokenBalanceDisplayedColumns: string[] = ['customerName', 'balanceTokenQty'];

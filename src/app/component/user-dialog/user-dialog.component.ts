@@ -53,6 +53,7 @@ export class UserDialogComponent {
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(1)]],
       mobileNo: ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
+      pin: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
       area: ['', Validators.required],
       address: ['', [Validators.required, Validators.minLength(3)]]
     });
@@ -64,6 +65,7 @@ export class UserDialogComponent {
       firstName: user.firstName,
       lastName: user.lastName,
       mobileNo: user.mobile,
+      pin: user.pin,
       area: user.areaId,
       address: user.address
     });
@@ -77,6 +79,7 @@ export class UserDialogComponent {
         firstName: formValue.firstName,
         lastName: formValue.lastName,
         mobile: formValue.mobileNo.toString(),
+        pin: formValue.pin,
         areaId: formValue.area,
         address: formValue.address,
         isActive: true,
@@ -92,11 +95,30 @@ export class UserDialogComponent {
         this.milkOrderService.createCustomer(userData).subscribe({
           next: (response) => {
             if (response && response.result && response.result.data) {
-              this.dialogRef.close({
+
+              this.milkOrderService.checkValidUser(userData.mobile).subscribe({
+              next: (responseU) => {
+                if(responseU && responseU.result.data.length > 0 && responseU.result.data[0].userId > 0){
+                 let otpData = {
+                userId: responseU.result.data[0].userId,
+                otp: userData.pin
+              };
+             
+              this.milkOrderService.sendOTP(otpData).subscribe({
+                next: (res) => {
+                  this.dialogRef.close({
                 success: true,
                 data: response.result.data,
                 message: 'Customer created successfully'
               });
+                }
+              });
+                  
+                }
+              }
+            });
+             
+              
             } else {
               this.dialogRef.close({
                 success: false,
@@ -116,6 +138,15 @@ export class UserDialogComponent {
           this.milkOrderService.updateCustomer(userData).subscribe({
           next: (response) => {
             if (response && response.result && response.result.data) {
+              let otpData = {
+                userId: userData.userId,
+                otp: userData.pin
+              };
+             
+              this.milkOrderService.sendOTP(otpData).subscribe({
+                next: (res) => {
+                }
+              });
               this.dialogRef.close({
                 success: true,
                 data: response.result.data,
@@ -179,6 +210,18 @@ export class UserDialogComponent {
     event.target.value = cleanValue;
   }
 
+  // Handle PIN input (only allow digits, max 6)
+  onPinInput(event: any): void {
+    // Remove all non-digit characters
+    const value = event.target.value.replace(/\D/g, '');
+    // Limit to 6 digits maximum
+    const cleanValue = value.slice(0, 6);
+    // Update the form control
+    this.userForm.get('pin')?.setValue(cleanValue);
+    // Update the input field to reflect the cleaned value
+    event.target.value = cleanValue;
+  }
+
   // Prevent non-numeric characters from being typed
   onKeyPress(event: KeyboardEvent): void {
     const charCode = event.which ? event.which : event.keyCode;
@@ -196,6 +239,10 @@ export class UserDialogComponent {
     
     if (control?.hasError('pattern') && fieldName === 'mobileNo') {
       return 'Please enter a valid 10-digit mobile number starting with 6-9';
+    }
+    
+    if (control?.hasError('pattern') && fieldName === 'pin') {
+      return 'Please enter a valid 6-digit PIN';
     }
     return '';
   }

@@ -17,12 +17,12 @@
       </ul>
     </nav>
 
-    <!-- <div class="sidebar-footer">
+     <div class="sidebar-footer">
       <button class="logout-btn" (click)="logout()">
         <span class="logout-icon">🚪</span>
         Logout
       </button>
-    </div> -->
+    </div> 
   </div>
 
   <!-- Main Content Area -->
@@ -88,6 +88,11 @@
                 <ng-container matColumnDef="address">
                   <mat-header-cell *matHeaderCellDef>Address</mat-header-cell>
                   <mat-cell *matCellDef="let user" class="address-cell">{{user.address}}</mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="pin">
+                  <mat-header-cell *matHeaderCellDef>Login PIN</mat-header-cell>
+                  <mat-cell *matCellDef="let user" class="pin-cell">{{user.pin ? 'user.pin' : 'Not Set'}}</mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="isActive">

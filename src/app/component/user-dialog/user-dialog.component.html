@@ -52,6 +52,26 @@
         </div>
 
         <div class="form-field">
+          <label class="field-label">Mobile Login PIN *</label>
+          <mat-form-field appearance="outline">
+            <input matInput formControlName="pin" 
+                   placeholder="Enter 6-digit PIN" 
+                   maxlength="6"
+                   (input)="onPinInput($event)"
+                   (keypress)="onKeyPress($event)"
+                   pattern="[0-9]*"
+                   inputmode="numeric"
+                  >
+            <mat-hint>Enter 6-digit numeric PIN</mat-hint>
+            <mat-error *ngIf="userForm.get('pin')?.touched && userForm.get('pin')?.errors">
+              {{ getErrorMessage('pin') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
           <label class="field-label">Area *</label>
           <mat-form-field appearance="outline">
             <mat-select formControlName="area" placeholder="Select area">

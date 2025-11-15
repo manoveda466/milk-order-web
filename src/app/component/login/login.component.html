@@ -2,9 +2,9 @@
   <div class="login-card">
     <!-- Header -->
     <div class="login-header">
-      <h2>{{ showOtpScreen ? 'Enter OTP' : 'Login' }}</h2>
+      <h2>{{ showOtpScreen ? 'Enter PIN' : 'Login' }}</h2>
       <p class="subtitle">
-        {{ showOtpScreen ? 'We have sent a 6-digit OTP to your mobile number' : 'Enter your mobile number to continue' }}
+        {{ showOtpScreen ? 'Please enter 6 digit PIN' : 'Enter your mobile number to continue' }}
       </p>
     </div>
 
@@ -45,13 +45,13 @@
 
     <!-- OTP Input Screen -->
     <div *ngIf="showOtpScreen" class="otp-input-section">
-      <div class="mobile-display">
+      <!-- <div class="mobile-display">
         <span class="mobile-number">+91 {{ mobileNumber }}</span>
         <button type="button" (click)="goBack()" class="change-number-btn">Change</button>
-      </div>
+      </div> -->
 
       <div class="form-group">
-        <label for="otp">Enter OTP</label>
+        <!-- <label for="otp">Enter OTP</label> -->
         <input
           id="otp"
           type="tel"
@@ -64,9 +64,9 @@
         />
       </div>
 
-      <div class="otp-timer" *ngIf="!canResendOtp">
+      <!-- <div class="otp-timer" *ngIf="!canResendOtp">
         <span>Resend OTP in {{ otpTimer }}s</span>
-      </div>
+      </div> -->
 
       <div class="otp-actions">
         <button
@@ -76,17 +76,17 @@
           class="primary-button"
         >
           <span *ngIf="isLoading" class="loading-spinner"></span>
-          {{ isLoading ? 'Verifying...' : 'Verify OTP' }}
+          {{ isLoading ? 'Verifying...' : 'Verify PIN' }}
         </button>
 
-        <button
+        <!-- <button
           type="button"
           (click)="resendOtp()"
           [disabled]="!canResendOtp || isLoading"
           class="secondary-button"
         >
           Resend OTP
-        </button>
+        </button> -->
       </div>
     </div>
 
