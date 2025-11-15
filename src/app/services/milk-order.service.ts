@@ -110,6 +110,10 @@ export class MilkOrderService {
     return this.apiService.put('MilkOrders/UpdateBulkOrderStatus?orderIds='+orderIds+'&status='+status);
   }
 
+  createManualOrder(data: any): Observable<any> {
+    return this.apiService.post('MilkOrders/CreateOrder', data);
+  }
+
 
 
 }

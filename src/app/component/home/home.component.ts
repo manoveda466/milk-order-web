@@ -22,6 +22,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UserDialogComponent } from '../user-dialog/user-dialog.component';
 import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
+import { ManualOrderDialogComponent } from '../manual-order-dialog/manual-order-dialog.component';
 import { MilkOrderService } from '../../services/milk-order.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -254,7 +255,7 @@ export class HomeComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+      if (result.success == true) {
         if (userId === 0) {
           this.getCustomerDetails();
           this.snackBar.open('User added successfully!', 'Close', {
@@ -277,6 +278,13 @@ export class HomeComponent {
           });
         }
         this.getCustomerDetails();
+      } else{
+        this.snackBar.open('Mobile number already exists. Please try a different number.', 'Close', {
+          duration: 5000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
       }
     });
   }
@@ -460,6 +468,7 @@ export class HomeComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      if(result && result.success == true) {
       
          this.getTokenHistory();
          this.getCumulativeTokens();
@@ -470,6 +479,7 @@ export class HomeComponent {
           verticalPosition: 'top',
           panelClass: ['success-snackbar']
         });
+      }
       
     });
   }
@@ -1020,7 +1030,7 @@ export class HomeComponent {
       
       // Table setup
       const headers = ['Customer Name', 'Mobile No', 'Area', 'Address', 'Status'];
-      const columnWidths = [45, 30, 25, 65, 25];
+      const columnWidths = [40, 28, 35, 60, 25]; // Increased Area column width from 25 to 35
       const tableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
       const startX = (pageWidth - tableWidth) / 2;
       let startY = 55;
@@ -1046,9 +1056,10 @@ export class HomeComponent {
       
       // Draw table data
       pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9); // Ensure font size is set for table content
       pdf.setTextColor(60, 60, 60); // Dark gray text
       let currentY = startY + 12;
-      const rowHeight = 10;
+      const rowHeight = 12; // Increased minimum row height for better visibility
       
       filteredCustomers.forEach((customer, index) => {
         // Check if we need a new page
@@ -1090,38 +1101,107 @@ export class HomeComponent {
         // Customer data
         const customerName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
         const mobile = customer.mobile || 'N/A';
-        const area = customer.areaName || 'N/A';
+        const area = customer.areaName || customer.area || 'N/A'; // Try both areaName and area properties
         const address = customer.address || 'N/A';
         const status = customer.isActive ? 'Active' : 'Inactive';
         
+        // Debug: Log area value to console (remove this later)
+        if (index < 3) console.log('Area value for customer', customerName, ':', area);
+        
         currentX = startX;
         
-        // Helper function to wrap text
-        const wrapText = (text: string, maxWidth: number): string => {
-          if (pdf.getTextWidth(text) <= maxWidth - 4) {
-            return text;
+        // Enhanced function to wrap text into multiple lines
+        const wrapTextMultiLine = (text: string, maxWidth: number): string[] => {
+          if (!text || text.trim() === '' || text === 'N/A') {
+            return [text || 'N/A'];
           }
-          let wrapped = text;
-          while (pdf.getTextWidth(wrapped + '...') > maxWidth - 4 && wrapped.length > 0) {
-            wrapped = wrapped.slice(0, -1);
+          
+          const words = text.trim().split(' ');
+          const lines: string[] = [];
+          let currentLine = '';
+          
+          for (const word of words) {
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            const testWidth = pdf.getTextWidth(testLine);
+            
+            if (testWidth <= maxWidth - 4) {
+              currentLine = testLine;
+            } else {
+              if (currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+              } else {
+                // Word is too long, truncate it
+                let truncated = word;
+                while (pdf.getTextWidth(truncated + '...') > maxWidth - 4 && truncated.length > 0) {
+                  truncated = truncated.slice(0, -1);
+                }
+                lines.push(truncated + (truncated.length < word.length ? '...' : ''));
+              }
+            }
           }
-          return wrapped + (wrapped.length < text.length ? '...' : '');
+          
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+          
+          return lines.length > 0 ? lines : [''];
         };
         
-        // Draw vertical separators and text
+        // Prepare wrapped text for all columns to calculate row height
+        const wrappedTexts: string[][] = [];
+        const cellTexts = [customerName, mobile, area, address, status];
+        
+        cellTexts.forEach((cellText, colIndex) => {
+          wrappedTexts[colIndex] = wrapTextMultiLine(cellText, columnWidths[colIndex]);
+        });
+        
+        // Calculate required row height based on max lines in any column
+        const maxLines = Math.max(...wrappedTexts.map(lines => lines.length));
+        const dynamicRowHeight = Math.max(rowHeight, maxLines * 5 + 4);
+        
+        // Check if we need a new page with dynamic row height
+        if (currentY + dynamicRowHeight > pageHeight - 40) {
+          pdf.addPage();
+          currentY = 30;
+          
+          // Redraw headers on new page
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFillColor(52, 152, 219);
+          pdf.setTextColor(255, 255, 255);
+          pdf.rect(startX, currentY - 6, tableWidth, 10, 'F');
+          
+          let headerX = startX;
+          headers.forEach((header, headerIndex) => {
+            if (headerIndex > 0) {
+              pdf.line(headerX, currentY - 6, headerX, currentY + 4);
+            }
+            pdf.text(header, headerX + 2, currentY);
+            headerX += columnWidths[headerIndex];
+          });
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(60, 60, 60);
+          currentY += 12;
+        }
+        
+        // Draw row background with dynamic height
+        if (index % 2 === 0) {
+          pdf.setFillColor(248, 249, 250);
+          pdf.rect(startX, currentY - 6, tableWidth, dynamicRowHeight, 'F');
+        }
+        
+        // Draw row borders with dynamic height
+        pdf.setDrawColor(220, 220, 220);
+        pdf.setLineWidth(0.1);
+        pdf.rect(startX, currentY - 6, tableWidth, dynamicRowHeight, 'S');
+        
+        // Draw vertical separators and multi-line text
+        currentX = startX;
         headers.forEach((header, colIndex) => {
           if (colIndex > 0) {
             pdf.setDrawColor(220, 220, 220);
-            pdf.line(currentX, currentY - 6, currentX, currentY + 4);
-          }
-          
-          let cellText = '';
-          switch (colIndex) {
-            case 0: cellText = customerName; break;
-            case 1: cellText = mobile; break;
-            case 2: cellText = area; break;
-            case 3: cellText = address; break;
-            case 4: cellText = status; break;
+            pdf.line(currentX, currentY - 6, currentX, currentY - 6 + dynamicRowHeight);
           }
           
           // Color code status column
@@ -1135,12 +1215,20 @@ export class HomeComponent {
             pdf.setTextColor(60, 60, 60);
           }
           
-          const wrappedText = wrapText(cellText, columnWidths[colIndex]);
-          pdf.text(wrappedText, currentX + 2, currentY);
+          // Draw each line of wrapped text
+          const lines = wrappedTexts[colIndex];
+          lines.forEach((line, lineIndex) => {
+            const yPosition = currentY + (lineIndex * 5);
+            // Ensure text is visible with proper padding
+            if (line && line.trim().length > 0) {
+              pdf.text(line.trim(), currentX + 3, yPosition);
+            }
+          });
+          
           currentX += columnWidths[colIndex];
         });
         
-        currentY += rowHeight;
+        currentY += dynamicRowHeight;
       });
       
       // Add summary footer
@@ -1246,6 +1334,37 @@ export class HomeComponent {
   getUniqueCustomerCount(): number {
     const uniqueCustomers = new Set(this.orderDetails.map(order => order.userName));
     return uniqueCustomers.size;
+  }
+
+  createManualOrder(): void {
+    const dialogRef = this.dialog.open(ManualOrderDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: false,
+      data: { users: this.userDetails }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        // Refresh orders and token data after successful creation
+        this.getOrderDetails();
+        this.getCumulativeTokens();
+        
+        this.snackBar.open(result.message || 'Manual order created successfully!', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      } else if (result && !result.success) {
+        this.snackBar.open(result.message || 'Failed to create manual order', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   // Method to calculate total token balance for a customer

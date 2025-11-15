@@ -29,6 +29,7 @@ import { MilkOrderService } from '../../services/milk-order.service';
 export class UserDialogComponent {
   userForm: FormGroup;
   isEditMode: boolean = false;
+  isSubmitting: boolean = false; // Flag to prevent duplicate submissions
 
   areas: any[] = [];
 
@@ -72,7 +73,8 @@ export class UserDialogComponent {
   }
 
   onSubmit(isEditMode: boolean): void {
-    if (this.userForm.valid) {
+    if (this.userForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true; // Disable button to prevent duplicate clicks
       const formValue = this.userForm.value;
       const userData: any = {
         userId: formValue.userId == '' ? 0 : formValue.userId,
@@ -106,11 +108,15 @@ export class UserDialogComponent {
              
               this.milkOrderService.sendOTP(otpData).subscribe({
                 next: (res) => {
+                  this.isSubmitting = false; // Re-enable button
                   this.dialogRef.close({
                 success: true,
                 data: response.result.data,
                 message: 'Customer created successfully'
               });
+                },
+                error: (error) => {
+                  this.isSubmitting = false; // Re-enable button on error
                 }
               });
                   
@@ -120,6 +126,7 @@ export class UserDialogComponent {
              
               
             } else {
+              this.isSubmitting = false; // Re-enable button
               this.dialogRef.close({
                 success: false,
                 message: 'Failed to create customer'
@@ -127,6 +134,7 @@ export class UserDialogComponent {
             }
           },
           error: (error) => {
+            this.isSubmitting = false; // Re-enable button
             console.error('Error creating customer:', error);
             this.dialogRef.close({
               success: false,
@@ -145,6 +153,10 @@ export class UserDialogComponent {
              
               this.milkOrderService.sendOTP(otpData).subscribe({
                 next: (res) => {
+                  this.isSubmitting = false; // Re-enable button
+                },
+                error: (error) => {
+                  this.isSubmitting = false; // Re-enable button on error
                 }
               });
               this.dialogRef.close({
@@ -153,6 +165,7 @@ export class UserDialogComponent {
                 message: 'Customer updated successfully'
               });
             } else {
+              this.isSubmitting = false; // Re-enable button
               this.dialogRef.close({
                 success: false,
                 message: 'Failed to update customer'
@@ -160,6 +173,7 @@ export class UserDialogComponent {
             }
           },
           error: (error) => {
+            this.isSubmitting = false; // Re-enable button
             console.error('Error updating customer:', error);
             this.dialogRef.close({
               success: false,

@@ -1,28 +1,42 @@
-<div class="token-dialog">
+<div class="manual-order-dialog">
   <div mat-dialog-title class="dialog-header">
-    <h2>Add New Token</h2>
+    <h2>Create Manual Order</h2>
     <button mat-icon-button (click)="onCancel()" class="close-button">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
   <mat-dialog-content class="dialog-content">
-    <form [formGroup]="tokenForm" class="token-form">
+    <form [formGroup]="orderForm" class="order-form">
       <div class="form-row">
         <div class="form-field">
-          <label class="field-label">Name *</label>
+          <label class="field-label">Customer Name *</label>
           <mat-form-field appearance="outline">
-            <mat-select formControlName="userId" placeholder="Select user">
+            <mat-select formControlName="userId" placeholder="Select customer">
               <mat-option *ngFor="let user of users" [value]="user.userId">
-                {{ user.firstName+' '+user.lastName }}
+                {{ user.firstName + ' ' + user.lastName }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="tokenForm.get('userId')?.touched && tokenForm.get('userId')?.errors">
+            <mat-error *ngIf="orderForm.get('userId')?.touched && orderForm.get('userId')?.errors">
               {{ getErrorMessage('userId') }}
             </mat-error>
           </mat-form-field>
         </div>
 
+        <div class="form-field">
+          <label class="field-label">Delivery Date *</label>
+          <mat-form-field appearance="outline">
+            <input matInput [matDatepicker]="picker" formControlName="orderDate" placeholder="Select order date">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="orderForm.get('orderDate')?.touched && orderForm.get('orderDate')?.errors">
+              {{ getErrorMessage('orderDate') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-field">
           <label class="field-label">Token Type *</label>
           <mat-form-field appearance="outline">
@@ -31,14 +45,13 @@
                 {{ type.tokenType }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="tokenForm.get('tokenType')?.touched && tokenForm.get('tokenType')?.errors">
+            <mat-hint *ngIf="availableTokenQty > 0">Available: {{ availableTokenQty }} tokens</mat-hint>
+            <mat-error *ngIf="orderForm.get('tokenType')?.touched && orderForm.get('tokenType')?.errors">
               {{ getErrorMessage('tokenType') }}
             </mat-error>
           </mat-form-field>
         </div>
-      </div>
 
-      <div class="form-row">
         <div class="form-field">
           <label class="field-label">Token Quantity *</label>
           <mat-form-field appearance="outline">
@@ -46,8 +59,9 @@
                    placeholder="Enter token quantity" 
                    type="number" 
                    min="1" 
-                   max="1000">
-            <mat-error *ngIf="tokenForm.get('tokenQty')?.touched && tokenForm.get('tokenQty')?.errors">
+                   [max]="availableTokenQty > 0 ? availableTokenQty : 100">
+            <mat-hint *ngIf="availableTokenQty > 0">Max available: {{ availableTokenQty }}</mat-hint>
+            <mat-error *ngIf="orderForm.get('tokenQty')?.touched && orderForm.get('tokenQty')?.errors">
               {{ getErrorMessage('tokenQty') }}
             </mat-error>
           </mat-form-field>
@@ -63,8 +77,8 @@
     <button mat-raised-button color="primary" 
             (click)="onSubmit()" 
             type="submit"
-            [disabled]="tokenForm.invalid || isSubmitting">
-       {{ isSubmitting ? 'Processing...' : 'Add Token' }}
+            [disabled]="!isCreateOrderEnabled()">
+      {{ isSubmitting ? 'Creating...' : 'Create Order' }}
     </button>
   </mat-dialog-actions>
 </div>

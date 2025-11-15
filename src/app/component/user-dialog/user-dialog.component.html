@@ -112,8 +112,8 @@
     <button mat-raised-button color="primary" 
             (click)="onSubmit(isEditMode)" 
             type="submit"
-            [disabled]="userForm.invalid">
-      {{ isEditMode ? 'Update' : 'Add' }}
+            [disabled]="userForm.invalid || isSubmitting">
+      {{ isSubmitting ? 'Processing...' : (isEditMode ? 'Update' : 'Add') }}
     </button>
   </mat-dialog-actions>
 </div>

@@ -144,6 +144,10 @@
             <mat-card-title>Order Management</mat-card-title>
             <mat-card-subtitle>Track and manage customer orders</mat-card-subtitle>
             <div class="header-actions">
+              <button mat-raised-button color="primary" (click)="createManualOrder()" style="margin-right: 8px;">
+                <mat-icon>add</mat-icon>
+                Manual Order
+              </button>
               <button mat-raised-button color="accent" (click)="exportOrdersPDF()" [disabled]="isLoading" 
                       matTooltip="Export currently displayed orders as PDF">
                 <mat-icon *ngIf="!isLoading">picture_as_pdf</mat-icon>

@@ -28,6 +28,7 @@ import { MilkOrderService } from '../../services/milk-order.service';
 })
 export class TokenDialogComponent {
   tokenForm: FormGroup;
+  isSubmitting: boolean = false; // Flag to prevent duplicate submissions
 
   // List of users for dropdown (passed from parent)
   users: any[] = [];
@@ -65,7 +66,8 @@ export class TokenDialogComponent {
   }
 
   onSubmit(): void {
-    if (this.tokenForm.valid) {
+    if (this.tokenForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true; // Disable button to prevent duplicate clicks
       const formValue = this.tokenForm.value;
       
       const tokenData = {
@@ -80,18 +82,22 @@ export class TokenDialogComponent {
           if(response && response.result.data){
             this.milkOrderService.updateCumulativeToken({userId: formValue.userId, tokenId: formValue.tokenType, tokenQty: formValue.tokenQty, status: 'add'}).subscribe({
               next: (res) => {
+                this.isSubmitting = false; // Re-enable button
                 if(res && res.result.data){
-                  this.dialogRef.close();
+                  this.dialogRef.close(
+                    { success: true }
+                  );
                 }
               },
               error: () => {
-                
+                this.isSubmitting = false; // Re-enable button on error
               }
             });
             
           }
         },
         error: (error) => {
+          this.isSubmitting = false; // Re-enable button
           console.error('Error creating token:', error);
         }
       });
