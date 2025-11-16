@@ -1345,6 +1345,7 @@ export class HomeComponent {
 
   logout(): void {
     localStorage.removeItem('userDetails');
+    localStorage.removeItem('selectedNavSection');
     this.router.navigate(['/login']);
   }
 
