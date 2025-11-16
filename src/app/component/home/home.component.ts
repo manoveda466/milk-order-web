@@ -737,6 +737,14 @@ export class HomeComponent {
               this.orderFilters.tokenType);
   }
 
+  isTokenBalanceFiltered(): boolean {
+    return !!this.tokenBalanceFilters.customerName;
+  }
+
+  isTokenHistoryFiltered(): boolean {
+    return !!this.tokenHistoryFilters.customerName;
+  }
+
   exportOrdersPDF(): void {
     try {
       // Show loading state

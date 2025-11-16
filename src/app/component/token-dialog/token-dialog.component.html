@@ -63,7 +63,7 @@
     <button mat-raised-button color="primary" 
             (click)="onSubmit()" 
             type="submit"
-            [disabled]="tokenForm.invalid || isSubmitting">
+            [disabled]="!isAddTokenEnabled()">
        {{ isSubmitting ? 'Processing...' : 'Add Token' }}
     </button>
   </mat-dialog-actions>

@@ -368,21 +368,24 @@
           <mat-card-content>
             <!-- Search and Filter Section -->
             <div class="search-filters">
-              <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Customer Name</mat-label>
-                <mat-select [(ngModel)]="tokenHistoryFilters.customerName" (ngModelChange)="filterTokenHistory()">
-                  <mat-option value="">All Customers</mat-option>
-                  <mat-option *ngFor="let customerName of uniqueCustomerNames" [value]="customerName">{{customerName}}</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            
-            <!-- Clear Filter Button -->
-            <div class="filter-actions">
-              <button mat-raised-button color="primary" (click)="clearTokenHistoryFilters()" class="clear-btn">
-                <mat-icon>clear</mat-icon>
-                Clear Filters
-              </button>
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Customer Name</mat-label>
+                  <mat-select [(ngModel)]="tokenHistoryFilters.customerName" (ngModelChange)="filterTokenHistory()">
+                    <mat-option value="">All Customers</mat-option>
+                    <mat-option *ngFor="let customerName of uniqueCustomerNames" [value]="customerName">{{customerName}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <!-- Clear Filter Button -->
+                <div class="filter-actions">
+                  <button mat-raised-button color="primary" (click)="clearTokenHistoryFilters()" class="clear-btn"
+                          [disabled]="!isTokenHistoryFiltered()">
+                    <mat-icon>clear</mat-icon>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
             </div>
             
             <div class="table-container">
@@ -441,21 +444,24 @@
           <mat-card-content>
             <!-- Search and Filter Section -->
             <div class="search-filters">
-              <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Customer Name</mat-label>
-                <mat-select [(ngModel)]="tokenBalanceFilters.customerName" (ngModelChange)="filterTokenBalance()">
-                  <mat-option value="">All Customers</mat-option>
-                  <mat-option *ngFor="let customer of customerTokenBalance" [value]="customer.userName">{{customer.userName}}</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            
-            <!-- Clear Filter Button -->
-            <div class="filter-actions">
-              <button mat-raised-button color="primary" (click)="clearTokenBalanceFilters()" class="clear-btn">
-                <mat-icon>clear</mat-icon>
-                Clear Filters
-              </button>
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Customer Name</mat-label>
+                  <mat-select [(ngModel)]="tokenBalanceFilters.customerName" (ngModelChange)="filterTokenBalance()">
+                    <mat-option value="">All Customers</mat-option>
+                    <mat-option *ngFor="let customer of customerTokenBalance" [value]="customer.userName">{{customer.userName}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <!-- Clear Filter Button -->
+                <div class="filter-actions">
+                  <button mat-raised-button color="primary" (click)="clearTokenBalanceFilters()" class="clear-btn"
+                          [disabled]="!isTokenBalanceFiltered()">
+                    <mat-icon>clear</mat-icon>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
             </div>
             
             <div class="table-container">

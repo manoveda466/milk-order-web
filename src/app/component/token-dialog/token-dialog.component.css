@@ -173,6 +173,17 @@
   border-color: #ccc;
 }
 
+/* Loading state and disabled button styles */
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mat-mdc-raised-button:disabled {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  color: rgba(0, 0, 0, 0.26) !important;
+}
+
 /* Responsive design */
 @media (max-width: 600px) {
   .token-dialog {

@@ -147,4 +147,8 @@ export class TokenDialogComponent {
   getUserDisplayName(userId: number): string {
     return this.users.find(u => u.id === userId)?.name || '';
   }
+
+  isAddTokenEnabled(): boolean {
+    return this.tokenForm.valid && !this.isSubmitting;
+  }
 }

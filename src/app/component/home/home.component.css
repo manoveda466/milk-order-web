@@ -365,6 +365,17 @@
   white-space: nowrap;
 }
 
+/* Disabled button styles */
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mat-mdc-raised-button:disabled {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  color: rgba(0, 0, 0, 0.26) !important;
+}
+
 @media (max-width: 768px) {
   .search-filters {
     flex-direction: column;

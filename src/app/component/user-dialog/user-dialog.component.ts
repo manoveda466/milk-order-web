@@ -260,4 +260,8 @@ export class UserDialogComponent {
     }
     return '';
   }
+
+  isAddCustomerEnabled(): boolean {
+    return this.userForm.valid && !this.isSubmitting;
+  }
 }
