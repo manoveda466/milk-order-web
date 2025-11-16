@@ -14,7 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -27,6 +27,19 @@ import { ManualOrderDialogComponent } from '../manual-order-dialog/manual-order-
 import { MilkOrderService } from '../../services/milk-order.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+
+// Custom date format for dd-mm-yyyy display
+const DD_MM_YYYY_FORMAT = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'DD/MM/YYYY',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 interface MenuItem {
   id: string;
@@ -60,7 +73,10 @@ interface MenuItem {
     MatTooltipModule
   ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrl: './home.component.css',
+  providers: [
+    { provide: MAT_DATE_FORMATS, useValue: DD_MM_YYYY_FORMAT }
+  ]
 })
 export class HomeComponent {
   @ViewChild(MatSort) sort!: MatSort;
@@ -148,7 +164,24 @@ export class HomeComponent {
 
 
 
-  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer) {
+  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>) {
+    // Configure date adapter for dd/mm/yyyy format
+    this.dateAdapter.setLocale('en-GB'); // Use British locale for dd/mm/yyyy format
+    
+    // Restore saved navigation section from localStorage
+    this.restoreNavigationState();
+  }
+
+  private restoreNavigationState(): void {
+    const savedSection = localStorage.getItem('selectedNavSection');
+    if (savedSection) {
+      this.activeSection = savedSection;
+      
+      // Update menu items active state
+      this.menuItems.forEach(item => {
+        item.active = item.id === savedSection;
+      });
+    }
   }
  
 
@@ -557,6 +590,9 @@ export class HomeComponent {
     this.menuItems.forEach(item => {
       item.active = item.id === menuId;
     });
+    
+    // Save current selection to localStorage
+    localStorage.setItem('selectedNavSection', menuId);
     if(menuId === 'userDetails'){
       await this.getCustomerDetails();
     }else if(menuId === 'orderDetails'){
