@@ -16,6 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -53,6 +54,7 @@ interface MenuItem {
     MatDatepickerModule,
     MatNativeDateModule,
     MatCheckboxModule,
+    MatAutocompleteModule,
     MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule
@@ -86,6 +88,7 @@ export class HomeComponent {
 
   // Order filters
   orderFilters = {
+    customerName: '',
     deliveryDate: null as Date | null,
     area: '',
     status: '',
@@ -110,6 +113,11 @@ export class HomeComponent {
   uniqueStatuses: string[] = [];
   uniqueTokenTypes: string[] = [];
   uniqueCustomerNames: string[] = [];
+  uniqueOrderCustomers: string[] = [];
+  
+  // Customer search functionality
+  customerSearchText: string = '';
+  originalUserDetails: any[] = [];
 
   menuItems: MenuItem[] = [
     {
@@ -126,7 +134,7 @@ export class HomeComponent {
     },
     {
       id: 'userTokenDetails',
-      title: 'Customer Token History',
+      title: 'Customer Token Details',
       icon: '🔑',
       active: false
     },
@@ -195,6 +203,7 @@ export class HomeComponent {
         this.isLoading = false; 
         if(response && response.result.data.length > 0 ){
           this.userDetails = response.result.data;
+          this.originalUserDetails = [...response.result.data]; // Store original data for search
           this.userDataSource.data = response.result.data;
         }
       }
@@ -568,6 +577,11 @@ export class HomeComponent {
   filterOrders(): void {
     let filtered = [...this.orderDetails];
 
+    // Filter by customer name
+    if (this.orderFilters.customerName) {
+      filtered = filtered.filter(order => order.userName === this.orderFilters.customerName);
+    }
+
     // Filter by delivery date
     if (this.orderFilters.deliveryDate) {
       const selectedDate = this.formatDateToDDMMYYYY(this.orderFilters.deliveryDate);
@@ -598,6 +612,7 @@ export class HomeComponent {
 
   clearOrderFilters(): void {
     this.orderFilters = {
+      customerName: '',
       deliveryDate: null,
       area: '',
       status: '',
@@ -655,6 +670,9 @@ export class HomeComponent {
     this.filteredTokenBalance = [...this.customerTokenBalance];
     this.filteredTokenHistory = [...this.userTokenDetails];
     
+    // Extract unique customer names for order filtering
+    this.uniqueOrderCustomers = [...new Set(this.orderDetails.map(order => order.userName))].filter(name => name);
+    
     // Extract unique areas for dropdown
     this.uniqueAreas = [...new Set(this.orderDetails.map(order => order.areaName))].filter(area => area);
     
@@ -676,7 +694,8 @@ export class HomeComponent {
   }
 
   isOrdersFiltered(): boolean {
-    return !!(this.orderFilters.deliveryDate || 
+    return !!(this.orderFilters.customerName ||
+              this.orderFilters.deliveryDate || 
               this.orderFilters.area || 
               this.orderFilters.status || 
               this.orderFilters.tokenType);
@@ -1396,5 +1415,38 @@ export class HomeComponent {
     return this.sanitizer.bypassSecurityTrustHtml(htmlString);
   }
 
+  onImageError(event: any): void {
+    // Hide the image if it fails to load and log the error
+    console.warn('Logo image failed to load:', event.target.src);
+    event.target.style.display = 'none';
+  }
+
+  filterCustomers(): void {
+    if (!this.customerSearchText || this.customerSearchText.trim() === '') {
+      // Show all customers if search is empty
+      this.userDetails = [...this.originalUserDetails];
+      this.userDataSource.data = this.userDetails;
+      return;
+    }
+
+    const searchTerm = this.customerSearchText.toLowerCase().trim();
+    
+    // Filter customers by name (firstName + lastName) or mobile number
+    const filteredCustomers = this.originalUserDetails.filter(customer => {
+      const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.toLowerCase();
+      const mobile = (customer.mobile || '').toString().toLowerCase();
+      
+      return fullName.includes(searchTerm) || mobile.includes(searchTerm);
+    });
+
+    this.userDetails = filteredCustomers;
+    this.userDataSource.data = filteredCustomers;
+  }
+
+  clearCustomerSearch(): void {
+    this.customerSearchText = '';
+    this.userDetails = [...this.originalUserDetails];
+    this.userDataSource.data = this.userDetails;
+  }
   
 }

@@ -2,7 +2,10 @@
   <!-- Left Sidebar Menu -->
   <div class="sidebar">
     <div class="sidebar-header">
-      <h3>Milk Order Dashboard</h3>
+      <div class="logo-container">
+        <img src="images/milk.jpg" alt="Milk Order Logo" class="logo-image" (error)="onImageError($event)">
+        <h3>Dashboard</h3>
+      </div>
     </div>
     
     <nav class="sidebar-nav">
@@ -68,6 +71,26 @@
           </mat-card-header>
           
           <mat-card-content>
+            <!-- Customer Search Section -->
+            <div class="customer-search-section">
+              <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Search customers by name or mobile number...</mat-label>
+                <input matInput 
+                       [(ngModel)]="customerSearchText" 
+                       (ngModelChange)="filterCustomers()"
+                       placeholder="Type to search...">
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+              <button mat-raised-button 
+                      color="primary" 
+                      (click)="clearCustomerSearch()" 
+                      class="clear-search-btn"
+                      *ngIf="customerSearchText">
+                <mat-icon>clear</mat-icon>
+                Clear
+              </button>
+            </div>
+            
             <div class="table-container">
               <mat-table [dataSource]="userDataSource" matSort class="mat-elevation-1">
                 <ng-container matColumnDef="name">
@@ -166,45 +189,57 @@
           <mat-card-content>
             <!-- Search and Filter Section -->
             <div class="search-filters">
-              <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Delivery Date</mat-label>
-                <input matInput [matDatepicker]="picker" [(ngModel)]="orderFilters.deliveryDate" (ngModelChange)="filterOrders()">
-                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Customer Name</mat-label>
+                  <mat-select [(ngModel)]="orderFilters.customerName" (ngModelChange)="filterOrders()">
+                    <mat-option value="">All Customers</mat-option>
+                    <mat-option *ngFor="let customer of uniqueOrderCustomers" [value]="customer">{{customer}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Delivery Date</mat-label>
+                  <input matInput [matDatepicker]="picker" [(ngModel)]="orderFilters.deliveryDate" (ngModelChange)="filterOrders()">
+                  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Area</mat-label>
+                  <mat-select [(ngModel)]="orderFilters.area" (ngModelChange)="filterOrders()">
+                    <mat-option value="">All Areas</mat-option>
+                    <mat-option *ngFor="let area of uniqueAreas" [value]="area">{{area}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Status</mat-label>
+                  <mat-select [(ngModel)]="orderFilters.status" (ngModelChange)="filterOrders()">
+                    <mat-option value="">All Statuses</mat-option>
+                    <mat-option *ngFor="let status of uniqueStatuses" [value]="status">{{status}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
               
-              <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Area</mat-label>
-                <mat-select [(ngModel)]="orderFilters.area" (ngModelChange)="filterOrders()">
-                  <mat-option value="">All Areas</mat-option>
-                  <mat-option *ngFor="let area of uniqueAreas" [value]="area">{{area}}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              
-              <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Status</mat-label>
-                <mat-select [(ngModel)]="orderFilters.status" (ngModelChange)="filterOrders()">
-                  <mat-option value="">All Statuses</mat-option>
-                  <mat-option *ngFor="let status of uniqueStatuses" [value]="status">{{status}}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              
-              <mat-form-field appearance="outline" class="filter-field">
-                <mat-label>Token Type</mat-label>
-                <mat-select [(ngModel)]="orderFilters.tokenType" (ngModelChange)="filterOrders()">
-                  <mat-option value="">All Token Types</mat-option>
-                  <mat-option *ngFor="let tokenType of uniqueTokenTypes" [value]="tokenType">{{tokenType}}</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            
-            <!-- Clear Filter Button -->
-            <div class="filter-actions">
-              <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn" 
-                      [disabled]="!isOrdersFiltered()">
-                <mat-icon>clear</mat-icon>
-                Clear Filters
-              </button>
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="filter-field">
+                  <mat-label>Token Type</mat-label>
+                  <mat-select [(ngModel)]="orderFilters.tokenType" (ngModelChange)="filterOrders()">
+                    <mat-option value="">All Token Types</mat-option>
+                    <mat-option *ngFor="let tokenType of uniqueTokenTypes" [value]="tokenType">{{tokenType}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <!-- Clear Filter Button -->
+                <div class="filter-actions">
+                  <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn" 
+                          [disabled]="!isOrdersFiltered()">
+                    <mat-icon>clear</mat-icon>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
             </div>
             
             <!-- Bulk Update Section -->

@@ -8,8 +8,21 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MilkOrderService } from '../../services/milk-order.service';
+
+// Custom date format for dd-mm-yyyy display
+const DD_MM_YYYY_FORMAT = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'DD/MM/YYYY',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-manual-order-dialog',
@@ -26,7 +39,10 @@ import { MilkOrderService } from '../../services/milk-order.service';
     MatNativeDateModule
   ],
   templateUrl: './manual-order-dialog.component.html',
-  styleUrl: './manual-order-dialog.component.css'
+  styleUrl: './manual-order-dialog.component.css',
+  providers: [
+    { provide: MAT_DATE_FORMATS, useValue: DD_MM_YYYY_FORMAT }
+  ]
 })
 export class ManualOrderDialogComponent {
   orderForm: FormGroup;
@@ -47,9 +63,12 @@ export class ManualOrderDialogComponent {
     private milkOrderService: MilkOrderService,
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ManualOrderDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private dateAdapter: DateAdapter<Date>
   ) {
     this.users = data?.users || [];
+    // Configure date adapter for dd/mm/yyyy format
+    this.dateAdapter.setLocale('en-GB'); // Use British locale for dd/mm/yyyy format
     this.orderForm = this.createForm();
     this.getTokenTypes();
     this.getCustomerTokenBalance();
