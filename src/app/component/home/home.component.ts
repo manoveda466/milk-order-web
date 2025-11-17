@@ -474,7 +474,7 @@ export class HomeComponent {
           this.filterOrders();
 
           // Show success message
-          this.showSnackbar(`Selected order(s) updated to ${this.bulkUpdateStatus}!`, 'Close', {
+          this.showSnackbar(`Selected order(s) updated successfully!`, 'Close', {
             panelClass: ['success-snackbar']
           });
         }
