@@ -58,8 +58,8 @@
 .dialog-actions {
   padding: 16px 24px 24px 24px;
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
 }
 
 .dialog-actions button {
@@ -88,6 +88,8 @@
   .dialog-actions {
     padding: 16px;
     flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
   }
   
   .dialog-actions button {
@@ -107,6 +109,20 @@
 .mat-mdc-form-field-error {
   font-size: 12px;
   margin-top: 4px;
+}
+
+/* Button styling */
+.mat-mdc-raised-button.mat-primary {
+  background-color: #1976d2;
+  color: white !important;
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  background-color: #1565c0;
+}
+
+.mat-mdc-stroked-button {
+  border-color: #ccc;
 }
 
 /* Loading state styles */

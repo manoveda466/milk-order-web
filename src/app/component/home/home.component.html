@@ -1,4 +1,7 @@
 <div class="home-container">
+  <!-- Common Loading Component -->
+  <app-loading [overlay]="true"></app-loading>
+  
   <!-- Left Sidebar Menu -->
   <div class="sidebar">
     <div class="sidebar-header">
@@ -31,7 +34,7 @@
   <!-- Main Content Area -->
   <div class="main-content">
     <div class="content-header">
-      <h2>{{ activeMenuTitle }}</h2>
+      <h2 style="text-align: center; color: #2c2951 !important;">Milk Order App</h2>
     </div>
 
     <div class="content-body">
@@ -46,12 +49,11 @@
                 <mat-icon>person_add</mat-icon>
                 Add Customer
               </button>
-              <button mat-raised-button color="accent" [matMenuTriggerFor]="exportMenu" [disabled]="isLoading" 
+              <button mat-raised-button color="accent" [matMenuTriggerFor]="exportMenu" 
                       matTooltip="Export customer data as PDF" style="margin-left: 8px;">
-                <mat-icon *ngIf="!isLoading">picture_as_pdf</mat-icon>
-                <mat-icon *ngIf="isLoading" class="loading-icon">hourglass_empty</mat-icon>
-                {{isLoading ? 'Exporting...' : 'Export PDF'}}
-                <mat-icon *ngIf="!isLoading">arrow_drop_down</mat-icon>
+                <mat-icon>picture_as_pdf</mat-icon>
+                Export PDF
+                <mat-icon>arrow_drop_down</mat-icon>
               </button>
               <mat-menu #exportMenu="matMenu">
                 <button mat-menu-item (click)="exportCustomersPDF('all')">
@@ -171,11 +173,10 @@
                 <mat-icon>add</mat-icon>
                 Manual Order
               </button>
-              <button mat-raised-button color="accent" (click)="exportOrdersPDF()" [disabled]="isLoading" 
+              <button mat-raised-button color="accent" (click)="exportOrdersPDF()" 
                       matTooltip="Export currently displayed orders as PDF">
-                <mat-icon *ngIf="!isLoading">picture_as_pdf</mat-icon>
-                <mat-icon *ngIf="isLoading" class="loading-icon">hourglass_empty</mat-icon>
-                {{isLoading ? 'Exporting...' : 'Export PDF'}}
+                <mat-icon>picture_as_pdf</mat-icon>
+                Export PDF
               </button>
               <div class="export-info" *ngIf="isOrdersFiltered()">
                 <small>Will export filtered orders ({{filteredOrderDetails.length}} records)</small>

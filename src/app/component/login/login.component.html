@@ -1,8 +1,11 @@
 <div class="login-container">
+  <!-- Common Loading Component -->
+  <app-loading [overlay]="true"></app-loading>
+  
   <div class="login-card">
     <!-- Header -->
     <div class="login-header">
-      <h2>{{ showOtpScreen ? 'Enter PIN' : 'Login' }}</h2>
+      <h2 style="color: #2c2951 !important">Welcome to Milk Order App</h2>
       <p class="subtitle">
         {{ showOtpScreen ? 'Please enter 6 digit PIN' : 'Enter your mobile number to continue' }}
       </p>
@@ -11,9 +14,7 @@
     <!-- Mobile Number Input Screen -->
     <div *ngIf="!showOtpScreen" class="mobile-input-section">
       <div class="form-group">
-        <label for="mobileNumber">Mobile Number</label>
         <div class="mobile-input-container">
-          <span class="country-code">+91</span>
           <input
             id="mobileNumber"
             type="tel"
@@ -23,7 +24,7 @@
             placeholder="Enter 10-digit mobile number"
             maxlength="10"
             class="mobile-input"
-            [disabled]="isLoading"
+
             pattern="[0-9]*"
             inputmode="numeric"
           />
@@ -34,12 +35,11 @@
       <button
         type="button"
         (click)="checkValidUser()"
-        [disabled]="!isValidMobileNumber() || isLoading"
+        [disabled]="!isValidMobileNumber()"
         class="primary-button"
-        [class.button-disabled]="!isValidMobileNumber() || isLoading"
+        [class.button-disabled]="!isValidMobileNumber()"
       >
-        <span *ngIf="isLoading" class="loading-spinner"></span>
-        {{ isLoading ? 'Validating User...' : 'Continue' }}
+        Continue
       </button>
     </div>
 
@@ -54,13 +54,12 @@
         <!-- <label for="otp">Enter OTP</label> -->
         <input
           id="otp"
-          type="tel"
+          type="password"
           [(ngModel)]="otp"
           (input)="onOtpInput($event)"
-          placeholder="000000"
+          placeholder="Enter 6-digit PIN"
           maxlength="6"
           class="otp-input"
-          [disabled]="isLoading"
         />
       </div>
 
@@ -72,17 +71,16 @@
         <button
           type="button"
           (click)="verifyOtp()"
-          [disabled]="otp.length !== 6 || isLoading"
+          [disabled]="otp.length !== 6"
           class="primary-button"
         >
-          <span *ngIf="isLoading" class="loading-spinner"></span>
-          {{ isLoading ? 'Verifying...' : 'Verify PIN' }}
+          Verify PIN
         </button>
 
         <!-- <button
           type="button"
           (click)="resendOtp()"
-          [disabled]="!canResendOtp || isLoading"
+          [disabled]="!canResendOtp"
           class="secondary-button"
         >
           Resend OTP

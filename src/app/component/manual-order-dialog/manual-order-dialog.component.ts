@@ -129,7 +129,6 @@ export class ManualOrderDialogComponent {
               status: 'edit'
             }).subscribe({
               next: (res: any) => {
-                this.isSubmitting = false; // Re-enable button
                 if (res && res.result && res.result.data) {
                   this.dialogRef.close({
                     success: true,

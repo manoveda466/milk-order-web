@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MilkOrderService } from '../../services/milk-order.service';
+import { LoadingComponent } from '../loading/loading.component';
+import { LoadingService } from '../../services/loading.service';
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -13,7 +15,6 @@ export class LoginComponent implements OnDestroy {
   mobileNumber: string = '';
   otp: string = '';
   showOtpScreen: boolean = false;
-  isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
   otpTimer: number = 30;
@@ -23,7 +24,8 @@ export class LoginComponent implements OnDestroy {
 
   constructor(
     private router: Router,
-    private milkOrderService: MilkOrderService
+    private milkOrderService: MilkOrderService,
+    public loadingService: LoadingService
   ) {}
 
   // Validate mobile number (10 digits, starting with 6-9)
@@ -40,7 +42,6 @@ export class LoginComponent implements OnDestroy {
       return;
     }
 
-    this.isLoading = true;
     this.errorMessage = '';
 
     
@@ -58,16 +59,13 @@ export class LoginComponent implements OnDestroy {
             "createdOn": new Date()
           };
           //this.sendOTP(otpData);
-          this.isLoading = false;
         }
         else{
-          this.isLoading = false;
           this.errorMessage = 'User is not valid. Please try again.';
           this.showOtpScreen = false;
         }
       },
       error: (error) => {
-        this.isLoading = false;
         this.errorMessage = error.message || 'User is not valid. Please try again.';
       }
     });
@@ -76,13 +74,11 @@ export class LoginComponent implements OnDestroy {
   getUserDetailsById(userId: number) {
     this.milkOrderService.getUserDetailsById(userId).subscribe({
         next: (response) => {
-          this.isLoading = false; 
           this.startOtpTimer();
          localStorage.setItem('userDetails', JSON.stringify(response.result.data[0]));
         }
         ,
         error: (error) => {
-          this.isLoading = false;
           
         }
       });
@@ -92,13 +88,11 @@ export class LoginComponent implements OnDestroy {
   sendOTP(data: any) {
     this.milkOrderService.sendOTP(data).subscribe({
         next: (response) => {
-          this.isLoading = false; 
           this.startOtpTimer();
          this.successMessage = 'OTP sent successfully!';
         }
         ,
         error: (error) => {
-          this.isLoading = false;
           this.errorMessage = error.message || 'Failed to send OTP. Please try again.';
         }
       });
@@ -123,7 +117,6 @@ export class LoginComponent implements OnDestroy {
     this.milkOrderService.verifyOTP(userId, otp.toString()).subscribe({
         next: (response) => {
           if(response && response.result.data){
-            this.isLoading = false; 
             this.router.navigate(['/home']);
           } else{
             this.errorMessage = 'Invalid PIN. Please try again.';
@@ -132,7 +125,6 @@ export class LoginComponent implements OnDestroy {
         }
         ,
         error: (error) => {
-          this.isLoading = false;
           
         }
       });
@@ -142,7 +134,6 @@ export class LoginComponent implements OnDestroy {
   resendOtp(): void {
     if (!this.canResendOtp) return;
     
-    this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
     this.otp = '';

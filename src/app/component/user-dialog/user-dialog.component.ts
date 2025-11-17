@@ -108,7 +108,6 @@ export class UserDialogComponent {
              
               this.milkOrderService.sendOTP(otpData).subscribe({
                 next: (res) => {
-                  this.isSubmitting = false; // Re-enable button
                   this.dialogRef.close({
                 success: true,
                 data: response.result.data,
@@ -153,7 +152,6 @@ export class UserDialogComponent {
              
               this.milkOrderService.sendOTP(otpData).subscribe({
                 next: (res) => {
-                  this.isSubmitting = false; // Re-enable button
                 },
                 error: (error) => {
                   this.isSubmitting = false; // Re-enable button on error

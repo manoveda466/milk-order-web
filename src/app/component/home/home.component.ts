@@ -24,7 +24,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UserDialogComponent } from '../user-dialog/user-dialog.component';
 import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
 import { ManualOrderDialogComponent } from '../manual-order-dialog/manual-order-dialog.component';
+import { LoadingComponent } from '../loading/loading.component';
 import { MilkOrderService } from '../../services/milk-order.service';
+import { LoadingService } from '../../services/loading.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -70,7 +72,8 @@ interface MenuItem {
     MatAutocompleteModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatTooltipModule
+    MatTooltipModule,
+    LoadingComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
@@ -81,7 +84,6 @@ interface MenuItem {
 export class HomeComponent {
   @ViewChild(MatSort) sort!: MatSort;
   activeSection: string = 'userDetails';
-  isLoading: boolean = false;
   userDetails: any[] = [];
   userTokenDetails: any[] = [];
   customerTokenBalance: any[] = [];
@@ -164,12 +166,27 @@ export class HomeComponent {
 
 
 
-  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>) {
+  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>, public loadingService: LoadingService) {
     // Configure date adapter for dd/mm/yyyy format
     this.dateAdapter.setLocale('en-GB'); // Use British locale for dd/mm/yyyy format
     
     // Restore saved navigation section from localStorage
     this.restoreNavigationState();
+  }
+
+  // Helper method to show snackbar with loading state management
+  private showSnackbar(message: string, action: string = 'Close', config: any = {}): void {
+    this.loadingService.setSnackbarOpen(true);
+    const snackBarRef = this.snackBar.open(message, action, {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      ...config
+    });
+    
+    snackBarRef.afterDismissed().subscribe(() => {
+      this.loadingService.setSnackbarOpen(false);
+    });
   }
 
   private restoreNavigationState(): void {
@@ -212,7 +229,6 @@ export class HomeComponent {
   getOrderDetails() {
     this.milkOrderService.getOrders().subscribe({
       next: (response) => {
-        this.isLoading = false; 
         if(response && response.result.data.length > 0 ){
           this.orderDetails = response.result.data;
           this.filteredOrderDetails = [...response.result.data]; // Update filtered data
@@ -224,7 +240,6 @@ export class HomeComponent {
       }
       ,
       error: (error) => {
-        this.isLoading = false;
         
       }
     });
@@ -233,7 +248,6 @@ export class HomeComponent {
   getCustomerDetails() {
     this.milkOrderService.getCustomerDetails().subscribe({
       next: (response) => {
-        this.isLoading = false; 
         if(response && response.result.data.length > 0 ){
           this.userDetails = response.result.data;
           this.originalUserDetails = [...response.result.data]; // Store original data for search
@@ -242,7 +256,6 @@ export class HomeComponent {
       }
       ,
       error: (error) => {
-        this.isLoading = false;
         
       }
     });
@@ -251,14 +264,12 @@ export class HomeComponent {
   getCustomerDetailsById(userId: number) {
     this.milkOrderService.getCustomerById(userId).subscribe({
       next: (response) => {
-        this.isLoading = false; 
         if(response && response.result.data.length > 0 ){
           this.userDataSource.data = response.result.data;
         }
       }
       ,
       error: (error) => {
-        this.isLoading = false;
         
       }
     });
@@ -267,20 +278,15 @@ export class HomeComponent {
   updateCustomerStatus(data:any) {
     this.milkOrderService.updateCustomerStatus(data).subscribe({
       next: (response) => {
-        this.isLoading = false; 
         if(response && response.result.data ){
           this.getCustomerDetails();
-      this.snackBar.open('User deactivated successfully!', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+      this.showSnackbar('User status changed successfully!', 'Close', {
         panelClass: ['warning-snackbar']
       });
         }
       }
       ,
       error: (error) => {
-        this.isLoading = false;
         
       }
     });
@@ -289,6 +295,7 @@ export class HomeComponent {
   editUser(userId: number): void {
     const user = userId === 0 ? null : this.userDetails.find((u: any) => u.userId === userId);
  
+    this.loadingService.setDialogOpen(true);
     const dialogRef = this.dialog.open(UserDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
@@ -297,13 +304,11 @@ export class HomeComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      this.loadingService.setDialogOpen(false);
       if (result.success == true) {
         if (userId === 0) {
           this.getCustomerDetails();
-          this.snackBar.open('User added successfully!', 'Close', {
-            duration: 3000,
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
+          this.showSnackbar('User added successfully!', 'Close', {
             panelClass: ['success-snackbar']
           });
         } else {
@@ -312,19 +317,14 @@ export class HomeComponent {
           if (index !== -1) {
             this.userDetails[index] = result;
           }
-          this.snackBar.open('User updated successfully!', 'Close', {
-            duration: 3000,
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
+          this.showSnackbar('User updated successfully!', 'Close', {
             panelClass: ['success-snackbar']
           });
         }
         this.getCustomerDetails();
       } else{
-        this.snackBar.open('Mobile number already exists. Please try a different number.', 'Close', {
+        this.showSnackbar('Mobile number already exists. Please try a different number.', 'Close', {
           duration: 5000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
           panelClass: ['error-snackbar']
         });
       }
@@ -366,7 +366,6 @@ export class HomeComponent {
     
     const order = this.orderDetails.find(o => o.orderId === orderId);
     if (order) {
-
       this.milkOrderService.updateOrderStatus({ orderId: orderId, status: 'Delivered', updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString() }).subscribe({
         next: (response) => {
           if(response && response.result.data ){
@@ -375,10 +374,7 @@ export class HomeComponent {
         }
       });
       
-      this.snackBar.open('Order delivered successfully!', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+      this.showSnackbar('Order delivered successfully!', 'Close', {
         panelClass: ['success-snackbar']
       });
     }
@@ -403,10 +399,7 @@ export class HomeComponent {
         }
       });
       
-      this.snackBar.open('Order cancelled successfully!', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+      this.showSnackbar('Order cancelled successfully!', 'Close', {
         panelClass: ['success-snackbar']
       });
     }
@@ -464,10 +457,7 @@ export class HomeComponent {
 
   bulkUpdateOrderStatus(): void {
     if (this.selectedOrders.size === 0 || !this.bulkUpdateStatus) {
-      this.snackBar.open('Please select orders and status to update!', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+      this.showSnackbar('Please select orders and status to update!', 'Close', {
         panelClass: ['warning-snackbar']
       });
       return;
@@ -484,10 +474,7 @@ export class HomeComponent {
           this.filterOrders();
 
           // Show success message
-          this.snackBar.open(`Selected order(s) updated to ${this.bulkUpdateStatus}!`, 'Close', {
-            duration: 3000,
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
+          this.showSnackbar(`Selected order(s) updated to ${this.bulkUpdateStatus}!`, 'Close', {
             panelClass: ['success-snackbar']
           });
         }
@@ -502,6 +489,7 @@ export class HomeComponent {
   }
 
   addToken(): void {
+    this.loadingService.setDialogOpen(true);
     const dialogRef = this.dialog.open(TokenDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
@@ -510,15 +498,13 @@ export class HomeComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      this.loadingService.setDialogOpen(false);
       if(result && result.success == true) {
       
          this.getTokenHistory();
          this.getCumulativeTokens();
         
-        this.snackBar.open('Token added successfully!', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
+        this.showSnackbar('Token added successfully!', 'Close', {
           panelClass: ['success-snackbar']
         });
       }
@@ -557,9 +543,7 @@ export class HomeComponent {
 
     this.milkOrderService.deleteCustomerToken(userTokenId).subscribe({
       next: (response) => {
-
         if(response && response.result.data ){
-          
            this.milkOrderService.updateCumulativeToken({userId: userToken.userId, tokenId: userToken.tokenId, tokenQty: userToken.qty, status: 'edit'}).subscribe({
             next: (res) => {
               if(res && res.result.data){
@@ -569,10 +553,7 @@ export class HomeComponent {
             }  
              });
       
-          this.snackBar.open('Token deleted successfully!', 'Close', {
-            duration: 3000,
-            horizontalPosition: 'end',  
-            verticalPosition: 'top',
+          this.showSnackbar('Token deleted successfully!', 'Close', {
             panelClass: ['success-snackbar']
           });
         }
@@ -747,8 +728,6 @@ export class HomeComponent {
 
   exportOrdersPDF(): void {
     try {
-      // Show loading state
-      this.isLoading = true;
       
       // Create a new jsPDF instance
       const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape for more columns
@@ -789,7 +768,6 @@ export class HomeComponent {
           verticalPosition: 'top',
           panelClass: ['warning-snackbar']
         });
-        this.isLoading = false;
         return;
       }
       
@@ -1004,30 +982,22 @@ export class HomeComponent {
       
       // Show success message
       const filterText = isFiltered ? 'Filtered' : 'All';
-      this.snackBar.open(`${filterText} orders PDF exported successfully! (${filteredOrders.length} orders)`, 'Close', {
+      this.showSnackbar(`${filterText} orders PDF exported successfully! (${filteredOrders.length} orders)`, 'Close', {
         duration: 4000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
         panelClass: ['success-snackbar']
       });
       
     } catch (error) {
       console.error('Error exporting orders PDF:', error);
-      this.snackBar.open('Error exporting orders PDF. Please try again.', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+      this.showSnackbar('Error exporting orders PDF. Please try again.', 'Close', {
         panelClass: ['error-snackbar']
       });
     } finally {
-      this.isLoading = false;
     }
   }
 
   exportCustomersPDF(filter: 'all' | 'active' | 'inactive' = 'all'): void {
     try {
-      // Show loading state
-      this.isLoading = true;
       
       // Create a new jsPDF instance
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -1061,7 +1031,6 @@ export class HomeComponent {
           verticalPosition: 'top',
           panelClass: ['warning-snackbar']
         });
-        this.isLoading = false;
         return;
       }
       
@@ -1331,23 +1300,17 @@ export class HomeComponent {
       
       // Show success message
       const filterText = filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Inactive';
-      this.snackBar.open(`${filterText} customers PDF exported successfully! (${filteredCustomers.length} customers)`, 'Close', {
+      this.showSnackbar(`${filterText} customers PDF exported successfully! (${filteredCustomers.length} customers)`, 'Close', {
         duration: 4000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
         panelClass: ['success-snackbar']
       });
       
     } catch (error) {
       console.error('Error exporting PDF:', error);
-      this.snackBar.open('Error exporting PDF. Please try again.', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+      this.showSnackbar('Error exporting PDF. Please try again.', 'Close', {
         panelClass: ['error-snackbar']
       });
     } finally {
-      this.isLoading = false;
     }
   }
 
@@ -1401,6 +1364,7 @@ export class HomeComponent {
   }
 
   createManualOrder(): void {
+    this.loadingService.setDialogOpen(true);
     const dialogRef = this.dialog.open(ManualOrderDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
@@ -1409,22 +1373,17 @@ export class HomeComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      this.loadingService.setDialogOpen(false);
       if (result && result.success) {
         // Refresh orders and token data after successful creation
         this.getOrderDetails();
         this.getCumulativeTokens();
         
-        this.snackBar.open(result.message || 'Manual order created successfully!', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
+        this.showSnackbar(result.message || 'Manual order created successfully!', 'Close', {
           panelClass: ['success-snackbar']
         });
       } else if (result && !result.success) {
-        this.snackBar.open(result.message || 'Failed to create manual order', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
+        this.showSnackbar(result.message || 'Failed to create manual order', 'Close', {
           panelClass: ['error-snackbar']
         });
       }
