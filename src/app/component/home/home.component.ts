@@ -28,7 +28,6 @@ import { LoadingComponent } from '../loading/loading.component';
 import { MilkOrderService } from '../../services/milk-order.service';
 import { LoadingService } from '../../services/loading.service';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 // Custom date format for dd-mm-yyyy display
 const DD_MM_YYYY_FORMAT = {
@@ -1334,18 +1333,6 @@ export class HomeComponent {
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear().toString();
     return `${day}-${month}-${year}`;
-  }
-
-
-
-  private parseDateFromDDMMMYYYY(dateString: string): Date {
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const parts = dateString.split('-');
-    const day = parseInt(parts[0]);
-    const monthIndex = monthNames.indexOf(parts[1]);
-    const year = parseInt(parts[2]);
-    return new Date(year, monthIndex, day);
   }
 
   getOrdersByStatus(status: string): any[] {
