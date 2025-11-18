@@ -40,3 +40,5 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+.angular/cache/19.2.19/milk-order-web/.tsbuildinfo
+.angular/cache/19.2.19/milk-order-web/.tsbuildinfo
