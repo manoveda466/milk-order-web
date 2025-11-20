@@ -73,6 +73,9 @@ export class MilkOrderService {
   updateCustomerStatus(data: any): Observable<any> {
     return this.apiService.put('MilkOrders/UpdateUserStatus', data);
   }
+  updateCustomerTokenStatus(data: any): Observable<any> {
+    return this.apiService.put('MilkOrders/UpdateUserTokenStatus', data);
+  }
 
   getTokens(): Observable<any> {
     return this.apiService.get('MilkOrders/Tokens');

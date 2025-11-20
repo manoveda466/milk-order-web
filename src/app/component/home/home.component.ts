@@ -96,7 +96,7 @@ export class HomeComponent {
   // Column definitions
   userDisplayedColumns: string[] = ['name', 'mobileNo', 'area', 'address', 'pin', 'isActive', 'actions'];
   orderDisplayedColumns: string[] = ['select', 'id', 'userName', 'deliverDate', 'area', 'tokenQty', 'tokenType', 'status', 'actions'];
-  tokenDisplayedColumns: string[] = ['name', 'tokenQty', 'issueDate', 'tokenType', 'actions'];
+  tokenDisplayedColumns: string[] = ['name', 'tokenQty', 'issueDate', 'tokenType', 'totalAmount', 'paymentMode', 'paymentDate', 'status', 'actions'];
   tokenBalanceDisplayedColumns: string[] = ['customerName', 'balanceTokenQty'];
 
   // Order selection properties
@@ -119,7 +119,10 @@ export class HomeComponent {
 
   // Token history filters
   tokenHistoryFilters = {
-    customerName: ''
+    customerName: '',
+    status: '',
+    paymentMode: '',
+    paymentDate: null as Date | null
   };
 
   // Filtered data
@@ -131,6 +134,8 @@ export class HomeComponent {
   uniqueTokenTypes: string[] = [];
   uniqueCustomerNames: string[] = [];
   uniqueOrderCustomers: string[] = [];
+  uniqueTokenStatuses: string[] = [];
+  uniquePaymentModes: string[] = [];
   
   // Customer search functionality
   customerSearchText: string = '';
@@ -543,14 +548,14 @@ export class HomeComponent {
     this.milkOrderService.deleteCustomerToken(userTokenId).subscribe({
       next: (response) => {
         if(response && response.result.data ){
-           this.milkOrderService.updateCumulativeToken({userId: userToken.userId, tokenId: userToken.tokenId, tokenQty: userToken.qty, status: 'edit'}).subscribe({
-            next: (res) => {
-              if(res && res.result.data){
-                this.getTokenHistory();
-                this.getCumulativeTokens();
-              } 
-            }  
-             });
+          //  this.milkOrderService.updateCumulativeToken({userId: userToken.userId, tokenId: userToken.tokenId, tokenQty: userToken.qty, status: 'edit'}).subscribe({
+          //   next: (res) => {
+          //     if(res && res.result.data){
+          //       this.getTokenHistory();
+          //       this.getCumulativeTokens();
+          //     } 
+          //   }  
+          //    });
       
           this.showSnackbar('Token deleted successfully!', 'Close', {
             panelClass: ['success-snackbar']
@@ -559,6 +564,47 @@ export class HomeComponent {
       },
       error: () => {
         
+      }
+    });
+  }
+
+  recordCashPayment(userTokenId: number): void {
+    // Get current date in IST format
+    const now = new Date();
+    const istDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000)); // IST is UTC+5:30
+    const paymentDate = istDate.toISOString();
+
+    const paymentData = {
+      userTokenId: userTokenId,
+      paymentMode: 'Cash',
+      paymentDate: paymentDate,
+      status: 'Completed'
+    };
+
+    this.milkOrderService.updateCustomerTokenStatus(paymentData).subscribe({
+      next: (response) => {
+        if(response && response.result.data){
+              const userToken = this.userTokenDetails.find((u: any) => u.userTokenId === userTokenId);
+
+            this.milkOrderService.updateCumulativeToken({userId: userToken.userId, tokenId: userToken.tokenId, tokenQty: userToken.qty, status: 'add'}).subscribe({
+              next: (res) => {
+                if(res && res.result.data){
+                  this.getTokenHistory();
+                  this.showSnackbar('Cash payment recorded successfully!', 'Close', {
+                    panelClass: ['success-snackbar']
+                  });
+                }
+              },
+              error: () => {
+              }
+            });
+        }
+      },
+      error: (error) => {
+        console.error('Error recording cash payment:', error);
+        this.showSnackbar('Error recording cash payment', 'Close', {
+          panelClass: ['error-snackbar']
+        });
       }
     });
   }
@@ -668,13 +714,38 @@ export class HomeComponent {
       filtered = filtered.filter(token => token.userName === this.tokenHistoryFilters.customerName);
     }
 
+    // Filter by status
+    if (this.tokenHistoryFilters.status) {
+      filtered = filtered.filter(token => token.status === this.tokenHistoryFilters.status);
+    }
+
+    // Filter by payment mode
+    if (this.tokenHistoryFilters.paymentMode) {
+      filtered = filtered.filter(token => token.paymentMode === this.tokenHistoryFilters.paymentMode);
+    }
+
+    // Filter by payment date
+    if (this.tokenHistoryFilters.paymentDate) {
+      const selectedDate = new Date(this.tokenHistoryFilters.paymentDate).toDateString();
+      filtered = filtered.filter(token => {
+        if (token.paymentDate) {
+          const tokenDate = new Date(token.paymentDate).toDateString();
+          return tokenDate === selectedDate;
+        }
+        return false;
+      });
+    }
+
     this.filteredTokenHistory = filtered;
     this.tokenDataSource.data = this.filteredTokenHistory;
   }
 
   clearTokenHistoryFilters(): void {
     this.tokenHistoryFilters = {
-      customerName: ''
+      customerName: '',
+      status: '',
+      paymentMode: '',
+      paymentDate: null
     };
     this.filteredTokenHistory = [...this.userTokenDetails];
     this.tokenDataSource.data = this.filteredTokenHistory;
@@ -701,6 +772,11 @@ export class HomeComponent {
     // Extract unique customer names for token history dropdown
     this.uniqueCustomerNames = [...new Set(this.userTokenDetails.map(token => token.userName))].filter(name => name);
     
+    // Extract unique token statuses for token history filter
+    this.uniqueTokenStatuses = [...new Set(this.userTokenDetails.map(token => token.status))].filter(status => status);
+    
+    // Extract unique payment modes for token history filter
+    this.uniquePaymentModes = [...new Set(this.userTokenDetails.map(token => token.paymentMode))].filter(mode => mode);
   }
 
   // Filter method for search
@@ -722,7 +798,7 @@ export class HomeComponent {
   }
 
   isTokenHistoryFiltered(): boolean {
-    return !!this.tokenHistoryFilters.customerName;
+    return !!(this.tokenHistoryFilters.customerName || this.tokenHistoryFilters.status || this.tokenHistoryFilters.paymentMode || this.tokenHistoryFilters.paymentDate);
   }
 
   exportOrdersPDF(): void {

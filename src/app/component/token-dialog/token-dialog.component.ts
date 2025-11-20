@@ -45,15 +45,16 @@ export class TokenDialogComponent {
     this.users = data?.users || [];
     this.tokenForm = this.createForm();
     
-    
     this.getTokenTypes();
+    this.setupTotalAmountCalculation();
   }
 
   createForm(): FormGroup {
     return this.fb.group({
       userId: ['', Validators.required],
       tokenType: ['', Validators.required],
-      tokenQty: ['', [Validators.required, Validators.min(1), Validators.max(100)]]
+      tokenQty: ['', [Validators.required, Validators.min(1), Validators.max(100)]],
+      totalAmount: [{ value: 0, disabled: true }]
     });
   }
 
@@ -69,30 +70,22 @@ export class TokenDialogComponent {
     if (this.tokenForm.valid && !this.isSubmitting) {
       this.isSubmitting = true; // Disable button to prevent duplicate clicks
       const formValue = this.tokenForm.value;
+      const totalAmountValue = this.tokenForm.get('totalAmount')?.value;
       
       const tokenData = {
         userId: formValue.userId,
         tokenId: formValue.tokenType,
         Qty: formValue.tokenQty,
+        TotalAmount: totalAmountValue,
         issueDate: new Date().toISOString().split('T')[0]
       };
 
       this.milkOrderService.createCustomerToken(tokenData).subscribe({
         next: (response) => {
           if(response && response.result.data){
-            this.milkOrderService.updateCumulativeToken({userId: formValue.userId, tokenId: formValue.tokenType, tokenQty: formValue.tokenQty, status: 'add'}).subscribe({
-              next: (res) => {
-                if(res && res.result.data){
-                  this.dialogRef.close(
+             this.dialogRef.close(
                     { success: true }
                   );
-                }
-              },
-              error: () => {
-                this.isSubmitting = false; // Re-enable button on error
-              }
-            });
-            
           }
         },
         error: (error) => {
@@ -116,7 +109,31 @@ export class TokenDialogComponent {
     });
   }
 
-  
+  setupTotalAmountCalculation(): void {
+    // Subscribe to tokenType and tokenQty changes to calculate totalAmount
+    this.tokenForm.get('tokenType')?.valueChanges.subscribe(() => {
+      this.calculateTotalAmount();
+    });
+
+    this.tokenForm.get('tokenQty')?.valueChanges.subscribe(() => {
+      this.calculateTotalAmount();
+    });
+  }
+
+  calculateTotalAmount(): void {
+    const tokenTypeId = this.tokenForm.get('tokenType')?.value;
+    const tokenQty = this.tokenForm.get('tokenQty')?.value;
+
+    if (tokenTypeId && tokenQty) {
+      const selectedToken = this.tokenTypes.find(t => t.tokenId === tokenTypeId);
+      if (selectedToken) {
+        const totalAmount = selectedToken.tokenAmount * tokenQty;
+        this.tokenForm.get('totalAmount')?.setValue(totalAmount);
+      }
+    } else {
+      this.tokenForm.get('totalAmount')?.setValue(0);
+    }
+  }
 
   onCancel(): void {
     this.dialogRef.close();
