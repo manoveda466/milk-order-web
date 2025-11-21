@@ -1211,9 +1211,7 @@ export class HomeComponent {
         const area = customer.areaName || customer.area || 'N/A'; // Try both areaName and area properties
         const address = customer.address || 'N/A';
         const status = customer.isActive ? 'Active' : 'Inactive';
-        
-        // Debug: Log area value to console (remove this later)
-        if (index < 3) console.log('Area value for customer', customerName, ':', area);
+  
         
         currentX = startX;
         
