@@ -195,7 +195,7 @@ export class HomeComponent {
   ];
 
   private idleTimeout: any;
-  private readonly IDLE_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
+  private readonly IDLE_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 
   constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>, public loadingService: LoadingService, private dataRefreshService: DataRefreshService) {
     // Configure date adapter for dd/mm/yyyy format
