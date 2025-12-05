@@ -107,13 +107,15 @@
 
   <mat-dialog-actions class="dialog-actions">
     <button mat-stroked-button (click)="onCancel()" type="button">
+      <mat-icon>close</mat-icon>
       Cancel
     </button>
     <button mat-raised-button color="primary" 
             (click)="onSubmit(isEditMode)" 
             type="submit"
             [disabled]="!isAddCustomerEnabled()">
-      {{ isSubmitting ? 'Processing...' : (isEditMode ? 'Update' : 'Add') }}
+      <mat-icon>{{ isEditMode ? 'update' : 'person_add' }}</mat-icon>
+      {{ isSubmitting ? 'Processing...' : (isEditMode ? 'Update Customer' : 'Add Customer') }}
     </button>
   </mat-dialog-actions>
 </div>

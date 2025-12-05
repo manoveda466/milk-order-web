@@ -15,7 +15,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 500;
-  color: #1976d2;
+  color: #00b4d8;
 }
 
 .close-button {
@@ -63,7 +63,11 @@
 }
 
 .dialog-actions button {
-  min-width: 100px;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 /* Responsive design */
@@ -103,7 +107,7 @@
 }
 
 .mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline-thick {
-  color: #1976d2;
+  color: #00b4d8;
 }
 
 .mat-mdc-form-field-error {
@@ -113,16 +117,36 @@
 
 /* Button styling */
 .mat-mdc-raised-button.mat-primary {
-  background-color: #1976d2;
+  background-color: #00b4d8;
   color: white !important;
 }
 
 .mat-mdc-raised-button.mat-primary:hover {
-  background-color: #1565c0;
+  background-color: #0096c7;
 }
 
 .mat-mdc-stroked-button {
-  border-color: #ccc;
+  border-color: #00b4d8;
+  color: #00b4d8 !important;
+}
+
+.mat-mdc-stroked-button:hover {
+  background-color: rgba(0, 180, 216, 0.04);
+  border-color: #0096c7;
+  color: #0096c7 !important;
+}
+
+/* Icon colors */
+:host ::ng-deep .mat-mdc-raised-button.mat-primary .mat-icon {
+  color: white !important;
+}
+
+:host ::ng-deep .mat-mdc-stroked-button .mat-icon {
+  color: #00b4d8 !important;
+}
+
+:host ::ng-deep .mat-mdc-stroked-button:hover .mat-icon {
+  color: #0096c7 !important;
 }
 
 /* Loading state styles */
@@ -134,4 +158,9 @@ button[disabled] {
 .mat-mdc-raised-button:disabled {
   background-color: rgba(0, 0, 0, 0.12) !important;
   color: rgba(0, 0, 0, 0.26) !important;
+}
+
+/* Dialog container override */
+:host ::ng-deep .mat-mdc-dialog-container {
+  border-radius: 4px;
 }

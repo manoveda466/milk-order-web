@@ -72,12 +72,14 @@
 
   <mat-dialog-actions class="dialog-actions">
     <button mat-stroked-button (click)="onCancel()" type="button">
+      <mat-icon>close</mat-icon>
       Cancel
     </button>
     <button mat-raised-button color="primary" 
             (click)="onSubmit()" 
             type="submit"
             [disabled]="!isCreateOrderEnabled()">
+      <mat-icon>add_shopping_cart</mat-icon>
       {{ isSubmitting ? 'Creating...' : 'Create Order' }}
     </button>
   </mat-dialog-actions>

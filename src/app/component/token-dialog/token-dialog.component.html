@@ -68,13 +68,15 @@
 
   <mat-dialog-actions class="dialog-actions">
     <button mat-stroked-button (click)="onCancel()" type="button">
+      <mat-icon>close</mat-icon>
       Cancel
     </button>
     <button mat-raised-button color="primary" 
             (click)="onSubmit()" 
             type="submit"
             [disabled]="!isAddTokenEnabled()">
-       {{ isSubmitting ? 'Processing...' : 'Add Token' }}
+      <mat-icon>confirmation_number</mat-icon>
+      {{ isSubmitting ? 'Processing...' : 'Add Token' }}
     </button>
   </mat-dialog-actions>
 </div>

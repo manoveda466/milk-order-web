@@ -3,12 +3,17 @@
   <app-loading [overlay]="true"></app-loading>
   
   <!-- Left Sidebar Menu -->
-  <div class="sidebar">
+  <div class="sidebar" [class.collapsed]="sidebarCollapsed">
     <div class="sidebar-header">
-      <div class="logo-container">
+      <div class="logo-container" *ngIf="!sidebarCollapsed">
         <img src="images/milk.jpg" alt="Milk Order Logo" class="logo-image" (error)="onImageError($event)">
         <h3>Dashboard</h3>
       </div>
+      <button class="toggle-btn" (click)="toggleSidebar()" 
+              [matTooltip]="sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'"
+              matTooltipPosition="right">
+        <mat-icon>{{ sidebarCollapsed ? 'menu_open' : 'menu' }}</mat-icon>
+      </button>
     </div>
     
     <nav class="sidebar-nav">
@@ -16,27 +21,25 @@
         <li *ngFor="let item of menuItems" 
             class="menu-item" 
             [class.active]="item.active"
-            (click)="selectMenuItem(item.id)">
-          <span class="menu-icon">{{ item.icon }}</span>
-          <span class="menu-title">{{ item.title }}</span>
+            (click)="selectMenuItem(item.id)"
+            [matTooltip]="sidebarCollapsed ? item.title : ''"
+            matTooltipPosition="right">
+          <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
+          <span class="menu-title" *ngIf="!sidebarCollapsed">{{ item.title }}</span>
         </li>
       </ul>
     </nav>
 
      <div class="sidebar-footer">
-      <button class="logout-btn" (click)="logout()">
-        <span class="logout-icon">🚪</span>
-        Logout
+      <button class="logout-btn" (click)="logout()" [matTooltip]="sidebarCollapsed ? 'Logout' : ''" matTooltipPosition="right">
+        <mat-icon class="logout-icon">logout</mat-icon>
+        <span *ngIf="!sidebarCollapsed">Logout</span>
       </button>
     </div> 
   </div>
 
   <!-- Main Content Area -->
   <div class="main-content">
-    <div class="content-header">
-      <h2 style="text-align: center; color: #2c2951 !important;">Milk Order App</h2>
-    </div>
-
     <div class="content-body">
       <!-- User Details Section -->
       <div *ngIf="activeSection === 'userDetails'" class="section user-details-section">
@@ -123,11 +126,9 @@
                 <ng-container matColumnDef="isActive">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
                   <mat-cell *matCellDef="let user">
-                    <mat-chip-set>
-                      <mat-chip [class]="user.isActive ? 'status-active' : 'status-inactive'" selected>
-                        {{user.isActive ? 'Active' : 'Inactive'}}
-                      </mat-chip>
-                    </mat-chip-set>
+                    <span [class]="user.isActive ? 'status-badge status-active' : 'status-badge status-inactive'">
+                      {{user.isActive ? 'Active' : 'Inactive'}}
+                    </span>
                   </mat-cell>
                 </ng-container>
 
@@ -156,6 +157,14 @@
 
                 <mat-header-row *matHeaderRowDef="userDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: userDisplayedColumns;"></mat-row>
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell" [attr.colspan]="userDisplayedColumns.length">
+                    <div class="no-data-message">
+                      <mat-icon>info</mat-icon>
+                      <span>No records available</span>
+                    </div>
+                  </td>
+                </tr>
               </mat-table>
             </div>
           </mat-card-content>
@@ -178,12 +187,6 @@
                 <mat-icon>picture_as_pdf</mat-icon>
                 Export PDF
               </button>
-              <div class="export-info" *ngIf="isOrdersFiltered()">
-                <small>Will export filtered orders ({{filteredOrderDetails.length}} records)</small>
-              </div>
-              <div class="export-info" *ngIf="!isOrdersFiltered()">
-                <small>Will export all orders ({{orderDetails.length}} records)</small>
-              </div>
             </div>
           </mat-card-header>
           
@@ -246,7 +249,8 @@
             <!-- Bulk Update Section -->
             <div class="bulk-update-section" *ngIf="getSelectedOrdersCount() > 0">
               <div class="bulk-update-info">
-                <span>{{getSelectedOrdersCount()}} order(s) selected</span>
+                <mat-icon>check_circle</mat-icon>
+                <span><strong>{{getSelectedOrdersCount()}}</strong> {{ getSelectedOrdersCount() === 1 ? 'Order' : 'Orders' }} Selected</span>
               </div>
               <mat-form-field appearance="outline" class="bulk-status-field">
                 <mat-label>Update Status</mat-label>
@@ -313,13 +317,14 @@
                 <ng-container matColumnDef="status">
                   <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
                   <mat-cell *matCellDef="let order">
-                    <mat-chip-set>
-                      <mat-chip style="margin-left: -8px !important;"
-                        [color]="order.status === 'Delivered' ? 'accent' : order.status === 'Confirmed' ? 'primary' : order.status === 'Cancelled' ? 'warn' : 'primary'" 
-                        selected>
-                        {{order.status}}
-                      </mat-chip>
-                    </mat-chip-set>
+                    <span [ngClass]="{
+                      'status-badge': true,
+                      'status-delivered': order.status === 'Delivered',
+                      'status-confirmed': order.status === 'Confirmed',
+                      'status-cancelled': order.status === 'Cancelled'
+                    }">
+                      {{order.status}}
+                    </span>
                   </mat-cell>
                 </ng-container>
 
@@ -346,6 +351,14 @@
 
                 <mat-header-row *matHeaderRowDef="orderDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: orderDisplayedColumns;"></mat-row>
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell" [attr.colspan]="orderDisplayedColumns.length">
+                    <div class="no-data-message">
+                      <mat-icon>info</mat-icon>
+                      <span>No records available</span>
+                    </div>
+                  </td>
+                </tr>
               </mat-table>
             </div>
           </mat-card-content>
@@ -452,12 +465,20 @@
                 <ng-container matColumnDef="status">
                   <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
                   <mat-cell *matCellDef="let token">
-                    <ng-container *ngIf="token.status && token.status.trim()">
-                       {{token.status}}
-                    </ng-container>
-                    <ng-container *ngIf="!token.status || !token.status.trim()">
-                      <span>Not paid</span>
-                    </ng-container>
+                    <span [ngClass]="{
+                      'status-badge': true,
+                      'status-completed': token.status && token.status.trim() === 'Completed',
+                      'status-failed': token.status && token.status.trim() === 'Failed',
+                      'status-paid': token.status && token.status.trim() && token.status.trim() !== 'Completed' && token.status.trim() !== 'Failed',
+                      'status-unpaid': !token.status || !token.status.trim()
+                    }">
+                      <ng-container *ngIf="token.status && token.status.trim()">
+                        {{token.status}}
+                      </ng-container>
+                      <ng-container *ngIf="!token.status || !token.status.trim()">
+                        Not paid
+                      </ng-container>
+                    </span>
                   </mat-cell>
                 </ng-container>
 
@@ -484,6 +505,14 @@
 
                 <mat-header-row *matHeaderRowDef="tokenDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: tokenDisplayedColumns;"></mat-row>
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell" [attr.colspan]="tokenDisplayedColumns.length">
+                    <div class="no-data-message">
+                      <mat-icon>info</mat-icon>
+                      <span>No records available</span>
+                    </div>
+                  </td>
+                </tr>
               </mat-table>
             </div>
           </mat-card-content>
@@ -531,17 +560,25 @@
                 <ng-container matColumnDef="balanceTokenQty">
                   <mat-header-cell *matHeaderCellDef mat-sort-header>Total Token Balance</mat-header-cell>
                   <mat-cell *matCellDef="let customer" class="token-balance-cell">
-                    <div class="token-breakdown">
-                      <ng-container *ngFor="let token of customer.tokenDetails; let last = last">
-                        <span class="token-type-name">{{token.tokenType.toUpperCase()}}</span>: 
-                        <span class="token-qty-number">{{token.tokenQty}}</span><ng-container *ngIf="!last">, </ng-container>
-                      </ng-container>
+                    <div class="token-breakdown-grid">
+                      <span *ngFor="let token of customer.tokenDetails" class="token-balance-badge">
+                        <span class="token-name">{{token.tokenType}}</span>
+                        <span class="token-count">{{token.tokenQty}}</span>
+                      </span>
                     </div>
                   </mat-cell>
                 </ng-container>
 
                 <mat-header-row *matHeaderRowDef="tokenBalanceDisplayedColumns"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: tokenBalanceDisplayedColumns;"></mat-row>
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell" [attr.colspan]="tokenBalanceDisplayedColumns.length">
+                    <div class="no-data-message">
+                      <mat-icon>info</mat-icon>
+                      <span>No records available</span>
+                    </div>
+                  </td>
+                </tr>
               </mat-table>
             </div>
           </mat-card-content>

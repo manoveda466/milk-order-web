@@ -45,15 +45,15 @@ import { LoadingService } from '../../services/loading.service';
     .loading-spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid #e3f2fd;
-      border-top: 4px solid #1976d2;
+      border: 4px solid #e0f7fa;
+      border-top: 4px solid #00b4d8;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
 
     .loading-text {
       font-size: 14px;
-      color: #1976d2;
+      color: #00b4d8;
       font-weight: 500;
       text-align: center;
     }

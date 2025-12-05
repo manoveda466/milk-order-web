@@ -141,34 +141,38 @@ export class HomeComponent {
   customerSearchText: string = '';
   originalUserDetails: any[] = [];
 
+  // Sidebar state
+  sidebarCollapsed: boolean = false;
+
   menuItems: MenuItem[] = [
     {
       id: 'userDetails',
       title: 'Customer Details',
-      icon: '🙋‍♂️',
+      icon: 'people',
       active: true
     },
     {
       id: 'orderDetails',
       title: 'Order Details',
-      icon: '📋',
+      icon: 'shopping_cart',
       active: false
     },
     {
       id: 'userTokenDetails',
       title: 'Customer Token Details',
-      icon: '🔑',
+      icon: 'confirmation_number',
       active: false
     },
     {
       id: 'customerTokenBalance',
       title: 'Customer Token Balance',
-      icon: '💰',
+      icon: 'account_balance_wallet',
       active: false
     }
   ];
 
-
+  private idleTimeout: any;
+  private readonly IDLE_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 
   constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>, public loadingService: LoadingService) {
     // Configure date adapter for dd/mm/yyyy format
@@ -176,6 +180,39 @@ export class HomeComponent {
     
     // Restore saved navigation section from localStorage
     this.restoreNavigationState();
+    
+    // Setup idle timeout
+    this.setupIdleTimeout();
+  }
+
+  private setupIdleTimeout(): void {
+    // Events to track user activity
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    // Reset timeout on any user activity
+    events.forEach(event => {
+      document.addEventListener(event, () => this.resetIdleTimeout(), true);
+    });
+    
+    // Start the initial timeout
+    this.resetIdleTimeout();
+  }
+
+  private resetIdleTimeout(): void {
+    // Clear existing timeout
+    if (this.idleTimeout) {
+      clearTimeout(this.idleTimeout);
+    }
+    
+    // Set new timeout
+    this.idleTimeout = setTimeout(() => {
+      this.refreshApplication();
+    }, this.IDLE_TIME);
+  }
+
+  private refreshApplication(): void {
+    // Reload the page
+    window.location.reload();
   }
 
   // Helper method to show snackbar with loading state management
@@ -193,6 +230,11 @@ export class HomeComponent {
     });
   }
 
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+    localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
+  }
+
   private restoreNavigationState(): void {
     const savedSection = localStorage.getItem('selectedNavSection');
     if (savedSection) {
@@ -207,6 +249,12 @@ export class HomeComponent {
  
 
   ngOnInit() {
+    // Restore sidebar collapsed state
+    const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+    if (savedSidebarState) {
+      this.sidebarCollapsed = savedSidebarState === 'true';
+    }
+    
     // Initialize data sources
     this.getCustomerDetails();
     this.getTokenHistory();
