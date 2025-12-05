@@ -59,6 +59,22 @@
 .sidebar.collapsed .sidebar-header {
   padding: 20px 0;
   justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.logo-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.logo-icon-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
 .toggle-btn {
@@ -950,18 +966,18 @@ button[disabled] {
 
 .mat-mdc-header-cell {
   font-weight: 600;
-  color: #ffffff !important;
-  background-color: #00b4d8 !important;
+  color: #000000 !important;
+  background-color: transparent !important;
   vertical-align: middle;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 6px 10px !important;
-  border-bottom: 2px solid #0096c7 !important;
+  border-bottom: 2px solid #00b4d8 !important;
 }
 
 .mat-mdc-header-row {
-  background-color: #00b4d8 !important;
+  background-color: transparent !important;
 }
 
 .mat-mdc-cell {

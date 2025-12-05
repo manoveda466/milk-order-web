@@ -9,6 +9,9 @@
         <img src="images/milk.jpg" alt="Milk Order Logo" class="logo-image" (error)="onImageError($event)">
         <h3>Dashboard</h3>
       </div>
+      <div class="logo-icon" *ngIf="sidebarCollapsed">
+        <img src="images/milk.jpg" alt="Milk Order Logo" class="logo-icon-image">
+      </div>
       <button class="toggle-btn" (click)="toggleSidebar()" 
               [matTooltip]="sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'"
               matTooltipPosition="right">
