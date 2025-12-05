@@ -91,7 +91,7 @@ export class HomeComponent {
   userDataSource = new MatTableDataSource();
   orderDataSource = new MatTableDataSource();
   tokenDataSource = new MatTableDataSource();
-  tokenBalanceDataSource = new MatTableDataSource();
+  tokenBalanceDataSource = new MatTableDataSource<any>();
 
   // Column definitions
   userDisplayedColumns: string[] = ['name', 'mobileNo', 'area', 'address', 'pin', 'isActive', 'actions'];
@@ -102,6 +102,12 @@ export class HomeComponent {
   // Order selection properties
   selectedOrders: Set<string> = new Set();
   bulkUpdateStatus: string = '';
+  
+  // Filter expansion states
+  customerFiltersExpanded: boolean = false;
+  orderFiltersExpanded: boolean = false;
+  tokenHistoryFiltersExpanded: boolean = false;
+  tokenBalanceFiltersExpanded: boolean = false;
 
   // Order filters
   orderFilters = {
@@ -116,6 +122,9 @@ export class HomeComponent {
   tokenBalanceFilters = {
     customerName: ''
   };
+  
+  // Token balance view mode
+  tokenBalanceViewMode: 'grid' | 'list' = 'grid';
 
   // Token history filters
   tokenHistoryFilters = {
@@ -142,7 +151,7 @@ export class HomeComponent {
   originalUserDetails: any[] = [];
 
   // Sidebar state
-  sidebarCollapsed: boolean = false;
+  sidebarCollapsed: boolean = true;
 
   menuItems: MenuItem[] = [
     {
@@ -843,6 +852,26 @@ export class HomeComponent {
 
   isTokenBalanceFiltered(): boolean {
     return !!this.tokenBalanceFilters.customerName;
+  }
+  
+  toggleTokenBalanceView(): void {
+    this.tokenBalanceViewMode = this.tokenBalanceViewMode === 'grid' ? 'list' : 'grid';
+  }
+  
+  toggleCustomerFilters(): void {
+    this.customerFiltersExpanded = !this.customerFiltersExpanded;
+  }
+  
+  toggleOrderFilters(): void {
+    this.orderFiltersExpanded = !this.orderFiltersExpanded;
+  }
+  
+  toggleTokenHistoryFilters(): void {
+    this.tokenHistoryFiltersExpanded = !this.tokenHistoryFiltersExpanded;
+  }
+  
+  toggleTokenBalanceFilters(): void {
+    this.tokenBalanceFiltersExpanded = !this.tokenBalanceFiltersExpanded;
   }
 
   isTokenHistoryFiltered(): boolean {

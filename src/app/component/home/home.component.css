@@ -147,7 +147,7 @@
 
 .sidebar-nav {
   flex: 1;
-  padding: 20px 0;
+  padding: 0;
   overflow-y: auto;
 }
 
@@ -447,11 +447,66 @@
   flex-direction: column;
   gap: 16px;
   margin-bottom: 24px;
-  padding: 20px;
+  padding: 0;
   background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
   border-radius: 12px;
   border: 2px solid #e0f7fa;
   box-shadow: 0 2px 8px rgba(0, 180, 216, 0.1);
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
+  border-radius: 10px 10px 0 0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.filter-header:hover {
+  background: linear-gradient(135deg, #0096c7 0%, #0077b6 100%);
+}
+
+.filter-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-header h4 mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.filter-header .expand-icon {
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.filter-header .expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.filter-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  padding: 0 20px;
+}
+
+.filter-content.expanded {
+  max-height: 1000px;
+  opacity: 1;
+  padding: 20px;
 }
 
 .filter-row {
@@ -560,12 +615,17 @@
   flex: 1;
 }
 
-
+.search-filters .filter-row {
+  align-items: flex-end;
+}
 
 .clear-btn {
   height: 40px;
   flex-shrink: 0;
   white-space: nowrap;
+  margin-bottom: 8px;
+  font-size: 14px;
+  padding: 0 16px;
 }
 
 /* Disabled button styles */
@@ -814,6 +874,14 @@ button[disabled] {
   justify-content: flex-end;
 }
 
+/* Reduce actions column width */
+.mat-column-actions {
+  max-width: 100px !important;
+  width: 100px !important;
+  flex: 0 0 100px !important;
+  text-align: center !important;
+}
+
 .action-btn {
   padding: 6px 8px;
   border: none;
@@ -968,11 +1036,11 @@ button[disabled] {
   font-weight: 600;
   color: #000000 !important;
   background-color: transparent !important;
-  vertical-align: middle;
+  vertical-align: middle !important;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 6px 10px !important;
+  padding: 12px 16px !important;
   border-bottom: 2px solid #00b4d8 !important;
 }
 
@@ -981,9 +1049,8 @@ button[disabled] {
 }
 
 .mat-mdc-cell {
-  padding: 12px 16px;
-  vertical-align: middle;
-  align-items: center;
+  padding: 12px 16px !important;
+  vertical-align: middle !important;
 }
 
 /* Custom cell styling for Material tables */
@@ -1083,6 +1150,96 @@ button[disabled] {
   font-size: 32px;
   width: 32px;
   height: 32px;
+}
+
+/* Customer Token Grid Layout */
+.customer-token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.customer-token-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.customer-token-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 180, 216, 0.2);
+  transform: translateY(-2px);
+}
+
+.customer-card-header {
+  background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
+  color: white;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-card-header .customer-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.customer-card-header .customer-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.customer-card-body {
+  padding: 16px;
+}
+
+.token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.token-item {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  border: 2px solid #00b4d8;
+  transition: all 0.3s ease;
+}
+
+.token-item:hover {
+  background: #e3f2fd;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 180, 216, 0.2);
+}
+
+.token-item .token-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: #006b7d;
+  margin-bottom: 6px;
+  text-transform: capitalize;
+}
+
+.token-item .token-quantity {
+  font-size: 24px;
+  font-weight: 700;
+  color: #00b4d8;
+}
+
+.no-tokens {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 20px;
 }
 
 /* Token Balance Badge Grid */
@@ -1584,6 +1741,22 @@ button[disabled] {
   .token-details {
     grid-template-columns: 1fr;
   }
+  
+  /* Customer Token Grid Responsive */
+  .customer-token-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px 0;
+  }
+  
+  .token-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  
+  .customer-card-header .customer-name {
+    font-size: 16px;
+  }
 }
 
 /* Toast/Snackbar Styles */
@@ -1668,7 +1841,8 @@ button[disabled] {
   border-radius: 8px;
 }
 
-.customer-search-section .search-field {
+.customer-search-section .search-field,
+.search-filters .search-field {
   flex: 1;
   min-width: 300px;
 }
@@ -1677,6 +1851,9 @@ button[disabled] {
   height: 40px;
   flex-shrink: 0;
   white-space: nowrap;
+  margin-bottom: 8px;
+  font-size: 14px;
+  padding: 0 16px;
 }
 
 /* Export PDF Button Styles */
@@ -1751,6 +1928,23 @@ button[disabled] {
 .header-actions button {
   min-width: 120px;
   height: 40px;
+}
+
+/* View toggle button */
+.view-toggle-btn {
+  background-color: #00b4d8 !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.view-toggle-btn:hover {
+  background-color: #0096c7 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 180, 216, 0.3) !important;
+}
+
+.view-toggle-btn mat-icon {
+  margin-right: 4px;
 }
 
 /* Export info styling */
