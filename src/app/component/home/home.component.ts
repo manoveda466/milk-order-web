@@ -25,8 +25,13 @@ import { UserDialogComponent } from '../user-dialog/user-dialog.component';
 import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
 import { ManualOrderDialogComponent } from '../manual-order-dialog/manual-order-dialog.component';
 import { LoadingComponent } from '../loading/loading.component';
+import { CustomerInfoComponent } from '../customer-info/customer-info.component';
+import { OrdersComponent } from '../orders/orders.component';
+import { TokensComponent } from '../tokens/tokens.component';
+import { TokenBalanceComponent } from '../token-balance/token-balance.component';
 import { MilkOrderService } from '../../services/milk-order.service';
 import { LoadingService } from '../../services/loading.service';
+import { DataRefreshService } from '../../services/data-refresh.service';
 import jsPDF from 'jspdf';
 
 // Custom date format for dd-mm-yyyy display
@@ -72,7 +77,11 @@ interface MenuItem {
     MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule,
-    LoadingComponent
+    LoadingComponent,
+    CustomerInfoComponent,
+    OrdersComponent,
+    TokensComponent,
+    TokenBalanceComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
@@ -82,6 +91,11 @@ interface MenuItem {
 })
 export class HomeComponent {
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(CustomerInfoComponent) customerInfoComponent!: CustomerInfoComponent;
+  @ViewChild(OrdersComponent) ordersComponent!: OrdersComponent;
+  @ViewChild(TokensComponent) tokensComponent!: TokensComponent;
+  @ViewChild(TokenBalanceComponent) tokenBalanceComponent!: TokenBalanceComponent;
+  
   activeSection: string = 'userDetails';
   userDetails: any[] = [];
   userTokenDetails: any[] = [];
@@ -183,7 +197,7 @@ export class HomeComponent {
   private idleTimeout: any;
   private readonly IDLE_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>, public loadingService: LoadingService) {
+  constructor(private router: Router, private dialog: MatDialog, private snackBar: MatSnackBar, private milkOrderService: MilkOrderService, private sanitizer: DomSanitizer, private dateAdapter: DateAdapter<Date>, public loadingService: LoadingService, private dataRefreshService: DataRefreshService) {
     // Configure date adapter for dd/mm/yyyy format
     this.dateAdapter.setLocale('en-GB'); // Use British locale for dd/mm/yyyy format
     
@@ -551,11 +565,13 @@ export class HomeComponent {
 
   addToken(): void {
     this.loadingService.setDialogOpen(true);
+    // Filter to show only active customers in the dropdown
+    const activeCustomers = this.userDetails.filter(user => user.isActive);
     const dialogRef = this.dialog.open(TokenDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
       disableClose: false,
-      data: { token: null, users: this.userDetails }
+      data: { token: null, users: activeCustomers }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -564,6 +580,7 @@ export class HomeComponent {
       
          this.getTokenHistory();
          this.getCumulativeTokens();
+         this.dataRefreshService.triggerAllRefresh(); // Refresh all child components
         
         this.showSnackbar('Token added successfully!', 'Close', {
           panelClass: ['success-snackbar']
@@ -676,6 +693,20 @@ export class HomeComponent {
     
     // Save current selection to localStorage
     localStorage.setItem('selectedNavSection', menuId);
+    
+    // Refresh the appropriate child component data
+    setTimeout(() => {
+      if (menuId === 'userDetails' && this.customerInfoComponent) {
+        this.customerInfoComponent.getCustomerDetails();
+      } else if (menuId === 'orderDetails' && this.ordersComponent) {
+        this.ordersComponent.getOrderDetails();
+      } else if (menuId === 'userTokenDetails' && this.tokensComponent) {
+        this.tokensComponent.getTokenHistory();
+      } else if (menuId === 'customerTokenBalance' && this.tokenBalanceComponent) {
+        this.tokenBalanceComponent.getCumulativeTokens();
+      }
+    }, 0);
+    
     if(menuId === 'userDetails'){
       await this.getCustomerDetails();
     }else if(menuId === 'orderDetails'){
@@ -878,7 +909,7 @@ export class HomeComponent {
     return !!(this.tokenHistoryFilters.customerName || this.tokenHistoryFilters.status || this.tokenHistoryFilters.paymentMode || this.tokenHistoryFilters.paymentDate);
   }
 
-  exportOrdersPDF(): void {
+  exportOrdersPDF(data?: {orders: any[], filters: any}): void {
     try {
       
       // Create a new jsPDF instance
@@ -886,25 +917,26 @@ export class HomeComponent {
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       
-      // Always use the currently filtered/displayed orders
-      const filteredOrders = this.filteredOrderDetails;
-      const isFiltered = this.isOrdersFiltered();
+      // Use orders and filters from child component if provided, otherwise use local data
+      const filteredOrders = data ? data.orders : this.filteredOrderDetails;
+      const filters = data ? data.filters : this.orderFilters;
+      const isFiltered = data ? !!(filters.customerName || filters.deliveryDate || filters.area || filters.status || filters.tokenType) : this.isOrdersFiltered();
       let reportTitle = isFiltered ? 'Filtered Orders Report' : 'All Orders Report';
       
       // Add filter details to title if filters are applied
       if (isFiltered) {
         const filterDetails = [];
-        if (this.orderFilters.deliveryDate) {
-          filterDetails.push(`Date: ${this.orderFilters.deliveryDate.toLocaleDateString()}`);
+        if (filters.deliveryDate) {
+          filterDetails.push(`Date: ${filters.deliveryDate.toLocaleDateString()}`);
         }
-        if (this.orderFilters.area) {
-          filterDetails.push(`Area: ${this.orderFilters.area}`);
+        if (filters.area) {
+          filterDetails.push(`Area: ${filters.area}`);
         }
-        if (this.orderFilters.status) {
-          filterDetails.push(`Status: ${this.orderFilters.status}`);
+        if (filters.status) {
+          filterDetails.push(`Status: ${filters.status}`);
         }
-        if (this.orderFilters.tokenType) {
-          filterDetails.push(`Token: ${this.orderFilters.tokenType}`);
+        if (filters.tokenType) {
+          filterDetails.push(`Token: ${filters.tokenType}`);
         }
         if (filterDetails.length > 0) {
           reportTitle += ` (${filterDetails.join(', ')})`;
@@ -1503,11 +1535,13 @@ export class HomeComponent {
 
   createManualOrder(): void {
     this.loadingService.setDialogOpen(true);
+    // Filter to show only active customers in the dropdown
+    const activeCustomers = this.userDetails.filter(user => user.isActive);
     const dialogRef = this.dialog.open(ManualOrderDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
       disableClose: false,
-      data: { users: this.userDetails }
+      data: { users: activeCustomers }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -1516,6 +1550,7 @@ export class HomeComponent {
         // Refresh orders and token data after successful creation
         this.getOrderDetails();
         this.getCumulativeTokens();
+        this.dataRefreshService.triggerAllRefresh(); // Refresh all child components
         
         this.showSnackbar(result.message || 'Manual order created successfully!', 'Close', {
           panelClass: ['success-snackbar']

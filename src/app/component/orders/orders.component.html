@@ -1,0 +1,199 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Order Management</mat-card-title>
+    <mat-card-subtitle>Track and manage customer orders</mat-card-subtitle>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="createManualOrderClicked.emit()" style="margin-right: 8px;">
+        <mat-icon>add</mat-icon>
+        Manual Order
+      </button>
+      <button mat-raised-button color="accent" (click)="exportOrdersPDF()" 
+              matTooltip="Export currently displayed orders as PDF">
+        <mat-icon>picture_as_pdf</mat-icon>
+        Export PDF
+      </button>
+    </div>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <!-- Search and Filter Section -->
+    <div class="search-filters">
+      <div class="filter-header" (click)="toggleOrderFilters()">
+        <h4>
+          <mat-icon>filter_list</mat-icon>
+          Filters
+          <span class="filter-active-badge" *ngIf="isOrdersFiltered()">Active</span>
+        </h4>
+        <mat-icon class="expand-icon" [class.rotated]="orderFiltersExpanded">{{ orderFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </div>
+      <div class="filter-content" [class.expanded]="orderFiltersExpanded">
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Customer Name</mat-label>
+            <mat-select [(ngModel)]="orderFilters.customerName" (ngModelChange)="filterOrders()">
+              <mat-option value="">All Customers</mat-option>
+              <mat-option *ngFor="let customer of uniqueOrderCustomers" [value]="customer">{{customer}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Delivery Date</mat-label>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="orderFilters.deliveryDate" (ngModelChange)="filterOrders()">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Area</mat-label>
+            <mat-select [(ngModel)]="orderFilters.area" (ngModelChange)="filterOrders()">
+              <mat-option value="">All Areas</mat-option>
+              <mat-option *ngFor="let area of uniqueAreas" [value]="area">{{area}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="orderFilters.status" (ngModelChange)="filterOrders()">
+              <mat-option value="">All Statuses</mat-option>
+              <mat-option *ngFor="let status of uniqueStatuses" [value]="status">{{status}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Token Type</mat-label>
+            <mat-select [(ngModel)]="orderFilters.tokenType" (ngModelChange)="filterOrders()">
+              <mat-option value="">All Token Types</mat-option>
+              <mat-option *ngFor="let tokenType of uniqueTokenTypes" [value]="tokenType">{{tokenType}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <div class="filter-actions">
+            <button mat-raised-button color="primary" (click)="clearOrderFilters()" class="clear-btn" 
+                    [disabled]="!isOrdersFiltered()">
+              <mat-icon>clear</mat-icon>
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bulk Update Section -->
+    <div class="bulk-update-section" *ngIf="getSelectedOrdersCount() > 0">
+      <div class="bulk-update-info">
+        <mat-icon>check_circle</mat-icon>
+        <span><strong>{{getSelectedOrdersCount()}}</strong> {{ getSelectedOrdersCount() === 1 ? 'Order' : 'Orders' }} Selected</span>
+      </div>
+      <mat-form-field appearance="outline" class="bulk-status-field">
+        <mat-label>Update Status</mat-label>
+        <mat-select [(ngModel)]="bulkUpdateStatus">
+          <mat-option value="Delivered">Delivered</mat-option>
+          <mat-option value="Cancelled">Cancelled</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button color="accent" (click)="bulkUpdateOrderStatus()" [disabled]="!bulkUpdateStatus">
+        <mat-icon>update</mat-icon>
+        Update Selected
+      </button>
+    </div>
+    
+    <div class="table-container">
+      <mat-table [dataSource]="orderDataSource" matSort class="mat-elevation-1">
+        <ng-container matColumnDef="select">
+          <mat-header-cell *matHeaderCellDef>
+            <mat-checkbox 
+              [checked]="isAllOrdersSelected()"
+              [indeterminate]="getSelectedOrdersCount() > 0 && !isAllOrdersSelected()"
+              (change)="toggleAllOrders()">
+            </mat-checkbox>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let order">
+            <mat-checkbox 
+              [checked]="isOrderSelected(order.orderId)"
+              [disabled]="order.status === 'Cancelled' || order.status === 'Delivered'"
+              (change)="toggleOrderSelection(order.orderId)">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="id">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Order ID</mat-header-cell>
+          <mat-cell *matCellDef="let order" class="order-id">#{{order.orderId}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="userName">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+          <mat-cell *matCellDef="let order">{{order.userName}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="deliverDate">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Deliver Date</mat-header-cell>
+          <mat-cell *matCellDef="let order">{{order.orderDate | date:'dd-MMM-yyyy'}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="area">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Area</mat-header-cell>
+          <mat-cell *matCellDef="let order">{{order.areaName}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="tokenQty">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Token Qty</mat-header-cell>
+          <mat-cell *matCellDef="let order">{{order.tokenQty}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="tokenType">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Token Type</mat-header-cell>
+          <mat-cell *matCellDef="let order">{{order.tokenType}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let order">
+            <span [ngClass]="{
+              'status-badge': true,
+              'status-delivered': order.status === 'Delivered',
+              'status-confirmed': order.status === 'Confirmed',
+              'status-cancelled': order.status === 'Cancelled'
+            }">
+              {{order.status}}
+            </span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+          <mat-cell *matCellDef="let order">
+            <ng-container *ngIf="order.status !== 'Cancelled' && order.status !== 'Delivered'">
+              <button mat-icon-button [matMenuTriggerFor]="orderMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #orderMenu="matMenu">
+                <button mat-menu-item (click)="deliverOrder(order.orderId)" *ngIf="order.status !== 'Delivered'">
+                  <mat-icon>local_shipping</mat-icon>
+                  <span>Deliver Order</span>
+                </button>
+                <button mat-menu-item (click)="cancelOrder(order.orderId)" *ngIf="order.status !== 'Cancelled'">
+                  <mat-icon>cancel</mat-icon>
+                  <span>Cancel Order</span>
+                </button>
+              </mat-menu>
+            </ng-container>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="orderDisplayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: orderDisplayedColumns;"></mat-row>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="orderDisplayedColumns.length">
+            <div class="no-data-message">
+              <mat-icon>info</mat-icon>
+              <span>No records available</span>
+            </div>
+          </td>
+        </tr>
+      </mat-table>
+    </div>
+  </mat-card-content>
+</mat-card>

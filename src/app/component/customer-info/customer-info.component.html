@@ -1,0 +1,137 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Customer Information</mat-card-title>
+    <mat-card-subtitle>Manage customer profile and personal details</mat-card-subtitle>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="editUser(0)">
+        <mat-icon>person_add</mat-icon>
+        Add Customer
+      </button>
+      <button mat-raised-button color="accent" [matMenuTriggerFor]="exportMenu" matTooltip="Export customers to PDF">
+        <mat-icon>picture_as_pdf</mat-icon>
+        Export PDF
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #exportMenu="matMenu">
+        <button mat-menu-item (click)="exportCustomersPDF('all')">
+          <mat-icon>list</mat-icon>
+          <span>Export All Customers</span>
+        </button>
+        <button mat-menu-item (click)="exportCustomersPDF('active')">
+          <mat-icon>check_circle</mat-icon>
+          <span>Export Active Only</span>
+        </button>
+        <button mat-menu-item (click)="exportCustomersPDF('inactive')">
+          <mat-icon>cancel</mat-icon>
+          <span>Export Inactive Only</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <!-- Customer Search Section -->
+    <div class="search-filters">
+      <div class="filter-header" (click)="toggleCustomerFilters()">
+        <h4>
+          <mat-icon>filter_list</mat-icon>
+          Search & Filters
+          <span class="filter-active-badge" *ngIf="customerSearchText">Active</span>
+        </h4>
+        <mat-icon class="expand-icon" [class.rotated]="customerFiltersExpanded">{{ customerFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </div>
+      <div class="filter-content" [class.expanded]="customerFiltersExpanded">
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search customers by name or mobile number...</mat-label>
+            <input matInput 
+                   [(ngModel)]="customerSearchText" 
+                   (ngModelChange)="searchCustomers()"
+                   placeholder="Type to search...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          <button mat-raised-button 
+                  color="primary" 
+                  (click)="clearCustomerSearch()" 
+                  class="clear-search-btn"
+                  *ngIf="customerSearchText">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <mat-table [dataSource]="userDataSource" matSort class="mat-elevation-1">
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{user.firstName +' '+ user.lastName}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="mobileNo">
+          <mat-header-cell *matHeaderCellDef>Mobile No</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{user.mobile}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="area">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Area</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{user.areaName}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="address">
+          <mat-header-cell *matHeaderCellDef>Address</mat-header-cell>
+          <mat-cell *matCellDef="let user" class="address-cell">{{user.address}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="pin">
+          <mat-header-cell *matHeaderCellDef>Login PIN</mat-header-cell>
+          <mat-cell *matCellDef="let user" class="pin-cell">{{user.pin}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="isActive">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+          <mat-cell *matCellDef="let user">
+            <span [class]="user.isActive ? 'status-badge status-active' : 'status-badge status-inactive'">
+              {{user.isActive ? 'Active' : 'Inactive'}}
+            </span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+          <mat-cell *matCellDef="let user">
+            <button mat-icon-button [matMenuTriggerFor]="userMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #userMenu="matMenu">
+              <button mat-menu-item (click)="editUser(user.userId)">
+                <mat-icon>edit</mat-icon>
+                <span>Edit</span>
+              </button>
+              <button mat-menu-item (click)="deactivateUser(user.userId)" *ngIf="user.isActive">
+                <mat-icon>block</mat-icon>
+                <span>Deactivate</span>
+              </button>
+              <button mat-menu-item (click)="activateUser(user.userId)" *ngIf="!user.isActive">
+                <mat-icon>check_circle</mat-icon>
+                <span>Activate</span>
+              </button>
+            </mat-menu>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="userDisplayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: userDisplayedColumns;"></mat-row>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="userDisplayedColumns.length">
+            <div class="no-data-message">
+              <mat-icon>info</mat-icon>
+              <span>No records available</span>
+            </div>
+          </td>
+        </tr>
+      </mat-table>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,159 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Token Management</mat-card-title>
+    <mat-card-subtitle>Manage user tokens and subscriptions</mat-card-subtitle>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="addTokenClicked.emit()">
+        <mat-icon>add</mat-icon>
+        Add Token
+      </button>
+    </div>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <!-- Search and Filter Section -->
+    <div class="search-filters">
+      <div class="filter-header" (click)="toggleTokenHistoryFilters()">
+        <h4>
+          <mat-icon>filter_list</mat-icon>
+          Filters
+          <span class="filter-active-badge" *ngIf="isTokenHistoryFiltered()">Active</span>
+        </h4>
+        <mat-icon class="expand-icon" [class.rotated]="tokenHistoryFiltersExpanded">{{ tokenHistoryFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </div>
+      <div class="filter-content" [class.expanded]="tokenHistoryFiltersExpanded">
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Customer Name</mat-label>
+            <mat-select [(ngModel)]="tokenHistoryFilters.customerName" (ngModelChange)="filterTokenHistory()">
+              <mat-option value="">All Customers</mat-option>
+              <mat-option *ngFor="let customerName of uniqueCustomerNames" [value]="customerName">{{customerName}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="tokenHistoryFilters.status" (ngModelChange)="filterTokenHistory()">
+              <mat-option value="">All Status</mat-option>
+              <mat-option *ngFor="let status of uniqueTokenStatuses" [value]="status">{{status}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Payment Mode</mat-label>
+            <mat-select [(ngModel)]="tokenHistoryFilters.paymentMode" (ngModelChange)="filterTokenHistory()">
+              <mat-option value="">All Payment Modes</mat-option>
+              <mat-option *ngFor="let mode of uniquePaymentModes" [value]="mode">{{mode}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Payment Date</mat-label>
+            <input matInput [matDatepicker]="paymentDatePicker" [(ngModel)]="tokenHistoryFilters.paymentDate" (ngModelChange)="filterTokenHistory()">
+            <mat-datepicker-toggle matIconSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #paymentDatePicker></mat-datepicker>
+          </mat-form-field>
+          
+          <div class="filter-actions">
+            <button mat-raised-button color="primary" (click)="clearTokenHistoryFilters()" class="clear-btn"
+                    [disabled]="!isTokenHistoryFiltered()">
+              <mat-icon>clear</mat-icon>
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <mat-table [dataSource]="tokenDataSource" matSort class="mat-elevation-1">
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.userName}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="tokenQty">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Token Qty</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.qty}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="issueDate">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Issue Date</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.issueDate | date:'dd-MMM-yyyy'}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="tokenType">
+          <mat-header-cell *matHeaderCellDef>Token Type</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.tokenType}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="totalAmount">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Total Amount</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.totalAmount}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="paymentMode">
+          <mat-header-cell *matHeaderCellDef>Payment Mode</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.paymentMode}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="paymentDate">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Payment Date</mat-header-cell>
+          <mat-cell *matCellDef="let token">{{token.paymentDate | date:'dd-MMM-yyyy'}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let token">
+            <span [ngClass]="{
+              'status-badge': true,
+              'status-completed': token.status && token.status.trim() === 'Completed',
+              'status-failed': token.status && token.status.trim() === 'Failed',
+              'status-paid': token.status && token.status.trim() && token.status.trim() !== 'Completed' && token.status.trim() !== 'Failed',
+              'status-unpaid': !token.status || !token.status.trim()
+            }">
+              <ng-container *ngIf="token.status && token.status.trim()">
+                {{token.status}}
+              </ng-container>
+              <ng-container *ngIf="!token.status || !token.status.trim()">
+                Not paid
+              </ng-container>
+            </span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+          <mat-cell *matCellDef="let token">
+            <ng-container *ngIf="!token.status || !token.status.trim()">
+              <button mat-icon-button [matMenuTriggerFor]="tokenMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #tokenMenu="matMenu">
+                <button mat-menu-item (click)="recordCashPayment(token.userTokenId)">
+                  <mat-icon>payment</mat-icon>
+                  <span>Cash Payment</span>
+                </button>
+                <button mat-menu-item (click)="deleteToken(token.userTokenId)">
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete Token</span>
+                </button>
+              </mat-menu>
+            </ng-container>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="tokenDisplayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: tokenDisplayedColumns;"></mat-row>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="tokenDisplayedColumns.length">
+            <div class="no-data-message">
+              <mat-icon>info</mat-icon>
+              <span>No records available</span>
+            </div>
+          </td>
+        </tr>
+      </mat-table>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,379 @@
+/* Custom Slim Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+mat-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+mat-card-subtitle {
+  color: #666;
+  margin: 8px 0 0 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Search & Filters */
+.search-filters {
+  margin-bottom: 20px;
+  border: 2px solid #00b4d8;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.filter-header:hover {
+  background: linear-gradient(135deg, #0096c7 0%, #0077b6 100%);
+}
+
+.filter-header h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.filter-active-badge {
+  background-color: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.filter-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  opacity: 0;
+  padding: 0 16px;
+}
+
+.filter-content.expanded {
+  max-height: 500px;
+  opacity: 1;
+  padding: 16px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.search-field {
+  flex: 1;
+}
+
+.clear-search-btn {
+  height: 40px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.clear-search-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Table Styles */
+.table-container {
+  overflow-x: auto;
+  flex: 1;
+  margin-top: 20px;
+}
+
+mat-table {
+  width: 100%;
+}
+
+mat-header-cell {
+  font-weight: 600;
+  color: #424242;
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+mat-cell {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.address-cell {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pin-cell {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.status-inactive {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+
+.no-data-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #999;
+  gap: 8px;
+}
+
+.no-data-message mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Actions Column */
+.mat-column-actions {
+  width: 120px;
+  text-align: right;
+}
+
+/* Enhanced Status Badges with Animations */
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid;
+  background-color: transparent;
+}
+
+.status-badge:hover {
+  transform: translateY(-1px);
+}
+
+.status-active {
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.status-inactive {
+  color: #c62828;
+  border-color: #f44336;
+}
+
+/* Material Table Customization */
+.mat-mdc-table {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.mat-mdc-header-row {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #00b4d8;
+}
+
+.mat-mdc-row {
+  transition: background-color 0.2s ease;
+}
+
+.mat-mdc-row:hover {
+  background-color: #f5f5f5;
+}
+
+.mat-mdc-header-cell {
+  color: #212529;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Table Container with Scroll */
+.table-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #00b4d8;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #0096c7;
+}
+
+/* Button Styles */
+button[mat-raised-button],
+button[mat-flat-button] {
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+button[mat-raised-button]:hover,
+button[mat-flat-button]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mat-mdc-raised-button.mat-primary {
+  background-color: #00b4d8 !important;
+  color: white !important;
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  background-color: #0096c7 !important;
+}
+
+.mat-mdc-raised-button.mat-accent {
+  background-color: #00b4d8 !important;
+  color: white !important;
+}
+
+.mat-mdc-raised-button.mat-accent:hover {
+  background-color: #0096c7 !important;
+}
+
+.mat-mdc-raised-button.mat-warn:hover {
+  background-color: #d32f2f !important;
+}
+
+/* Additional selector for header action buttons */
+.header-actions button[mat-raised-button] {
+  background-color: #00b4d8 !important;
+  color: white !important;
+}
+
+.header-actions button[mat-raised-button]:hover {
+  background-color: #0096c7 !important;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+  }
+
+  .filter-field {
+    width: 100%;
+  }
+
+  .table-container {
+    max-height: 50vh;
+  }
+
+  mat-card-title {
+    font-size: 20px;
+  }
+}

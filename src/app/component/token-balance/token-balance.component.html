@@ -1,0 +1,104 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Customer Token Balance</mat-card-title>
+    <mat-card-subtitle>View customer token balance information</mat-card-subtitle>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="toggleTokenBalanceView()" class="view-toggle-btn">
+        <mat-icon>{{ tokenBalanceViewMode === 'grid' ? 'view_list' : 'grid_view' }}</mat-icon>
+        {{ tokenBalanceViewMode === 'grid' ? 'List View' : 'Grid View' }}
+      </button>
+    </div>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <!-- Search and Filter Section -->
+    <div class="search-filters">
+      <div class="filter-header" (click)="toggleTokenBalanceFilters()">
+        <h4>
+          <mat-icon>filter_list</mat-icon>
+          Filters
+          <span class="filter-active-badge" *ngIf="isTokenBalanceFiltered()">Active</span>
+        </h4>
+        <mat-icon class="expand-icon" [class.rotated]="tokenBalanceFiltersExpanded">{{ tokenBalanceFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </div>
+      <div class="filter-content" [class.expanded]="tokenBalanceFiltersExpanded">
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Customer Name</mat-label>
+            <mat-select [(ngModel)]="tokenBalanceFilters.customerName" (ngModelChange)="filterTokenBalance()">
+              <mat-option value="">All Customers</mat-option>
+              <mat-option *ngFor="let customer of customerTokenBalance" [value]="customer.userName">{{customer.userName}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <div class="filter-actions">
+            <button mat-raised-button color="primary" (click)="clearTokenBalanceFilters()" class="clear-btn"
+                    [disabled]="!isTokenBalanceFiltered()">
+              <mat-icon>clear</mat-icon>
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Grid View -->
+    <div *ngIf="tokenBalanceViewMode === 'grid'" class="customer-token-grid">
+      <div *ngIf="tokenBalanceDataSource.data.length === 0" class="no-data-message">
+        <mat-icon>info</mat-icon>
+        <span>No records available</span>
+      </div>
+      
+      <div *ngFor="let customer of tokenBalanceDataSource.data" class="customer-token-card">
+        <div class="customer-card-header">
+          <mat-icon class="customer-icon">person</mat-icon>
+          <h3 class="customer-name">{{customer.userName}}</h3>
+        </div>
+        <div class="customer-card-body">
+          <div class="token-grid">
+            <div *ngFor="let token of customer.tokenDetails" class="token-item">
+              <div class="token-type">{{token.tokenType}}</div>
+              <div class="token-quantity">{{token.tokenQty}}</div>
+            </div>
+          </div>
+          <div *ngIf="customer.tokenDetails.length === 0" class="no-tokens">
+            No tokens available
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- List View (Table) -->
+    <div *ngIf="tokenBalanceViewMode === 'list'" class="table-container">
+      <mat-table [dataSource]="tokenBalanceDataSource" matSort class="mat-elevation-1">
+        <ng-container matColumnDef="customerName">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
+          <mat-cell *matCellDef="let customer">{{customer.userName}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="balanceTokenQty">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Total Token Balance</mat-header-cell>
+          <mat-cell *matCellDef="let customer" class="token-balance-cell">
+            <div class="token-breakdown-grid">
+              <span *ngFor="let token of customer.tokenDetails" class="token-balance-badge">
+                <span class="token-name">{{token.tokenType}}</span>
+                <span class="token-count">{{token.tokenQty}}</span>
+              </span>
+            </div>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="tokenBalanceDisplayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: tokenBalanceDisplayedColumns;"></mat-row>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="tokenBalanceDisplayedColumns.length">
+            <div class="no-data-message">
+              <mat-icon>info</mat-icon>
+              <span>No records available</span>
+            </div>
+          </td>
+        </tr>
+      </mat-table>
+    </div>
+  </mat-card-content>
+</mat-card>

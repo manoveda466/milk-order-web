@@ -1,0 +1,443 @@
+mat-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+mat-card-subtitle {
+  color: #666;
+  margin: 8px 0 0 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-toggle-btn.mat-mdc-raised-button,
+.view-toggle-btn.mat-mdc-button {
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.view-toggle-btn.mat-mdc-raised-button:hover,
+.view-toggle-btn.mat-mdc-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Search & Filters */
+.search-filters {
+  margin-bottom: 20px;
+  border: 2px solid #00b4d8;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.filter-header:hover {
+  background: linear-gradient(135deg, #0096c7 0%, #0077b6 100%);
+}
+
+.filter-header h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.filter-active-badge {
+  background-color: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.filter-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  opacity: 0;
+  padding: 0 16px;
+}
+
+.filter-content.expanded {
+  max-height: 500px;
+  opacity: 1;
+  padding: 16px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.filter-field {
+  flex: 1;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.clear-btn {
+  height: 40px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.clear-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Grid View Styles */
+.customer-token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.customer-token-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  background: white;
+}
+
+.customer-token-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.customer-card-header {
+  background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+  color: white;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.customer-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.customer-card-body {
+  padding: 16px;
+}
+
+.token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.token-item {
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.token-item:hover {
+  background: #eeeeee;
+  border-color: #00b4d8;
+}
+
+.token-type {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.token-quantity {
+  font-size: 24px;
+  font-weight: 600;
+  color: #00b4d8;
+}
+
+.no-tokens {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+}
+
+/* List View (Table) Styles */
+.table-container {
+  overflow-x: auto;
+  flex: 1;
+  margin-top: 20px;
+}
+
+mat-table {
+  width: 100%;
+}
+
+mat-header-cell {
+  font-weight: 600;
+  color: #424242;
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+mat-cell {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.token-balance-cell {
+  padding: 8px 16px !important;
+}
+
+.token-breakdown-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.token-balance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: transparent;
+  border: 1.5px solid #00b4d8;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.token-name {
+  color: #00b4d8;
+  font-weight: 600;
+}
+
+.token-count {
+  background-color: #00b4d8;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.no-data-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #999;
+  gap: 8px;
+}
+
+.no-data-message mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Custom Slim Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+/* Material Table Customization */
+.mat-mdc-table {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.mat-mdc-header-row {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #00b4d8;
+}
+
+.mat-mdc-row {
+  transition: background-color 0.2s ease;
+}
+
+.mat-mdc-row:hover {
+  background-color: #f5f5f5;
+}
+
+.mat-mdc-header-cell {
+  color: #212529;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Table Container with Scroll */
+.table-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #00b4d8;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #0096c7;
+}
+
+/* Button Styles */
+button[mat-raised-button],
+button[mat-flat-button] {
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+button[mat-raised-button]:hover,
+button[mat-flat-button]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mat-mdc-raised-button.mat-primary {
+  background-color: #00b4d8;
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  background-color: #0096c7;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+  }
+
+  .filter-field {
+    width: 100%;
+  }
+
+  .customer-token-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-container {
+    max-height: 50vh;
+  }
+
+  mat-card-title {
+    font-size: 20px;
+  }
+}
