@@ -323,6 +323,46 @@ export class OrdersComponent implements OnInit, AfterViewInit {
         currentY += rowHeight;
       });
       
+      // Add total token quantities by type at the bottom
+      currentY += 10; // Add some spacing
+      
+      // Calculate totals by token type
+      const tokenTotals: { [key: string]: number } = {};
+      filteredOrders.forEach(order => {
+        const tokenType = order.tokenType || 'Unknown';
+        const tokenQty = parseInt(order.tokenQty) || 0;
+        tokenTotals[tokenType] = (tokenTotals[tokenType] || 0) + tokenQty;
+      });
+      
+      // Draw totals section
+      if (currentY > pageHeight - 60) {
+        pdf.addPage();
+        currentY = 30;
+      }
+      
+      pdf.setDrawColor(52, 152, 219);
+      pdf.setLineWidth(0.5);
+      pdf.line(startX, currentY, startX + tableWidth, currentY);
+      currentY += 10;
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(11);
+      pdf.setTextColor(44, 62, 80);
+      pdf.text('Total Token Quantities by Type:', startX, currentY);
+      currentY += 10;
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      Object.keys(tokenTotals).sort().forEach((tokenType) => {
+        pdf.setTextColor(60, 60, 60);
+        pdf.text(`${tokenType}:`, startX + 10, currentY);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(52, 152, 219);
+        pdf.text(`${tokenTotals[tokenType]}`, startX + 80, currentY);
+        pdf.setFont('helvetica', 'normal');
+        currentY += 8;
+      });
+      
       const fileName = `orders_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
