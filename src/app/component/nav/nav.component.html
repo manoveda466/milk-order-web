@@ -1,0 +1,50 @@
+<div class="home-container">
+  <!-- Common Loading Component -->
+  <app-loading [overlay]="true"></app-loading>
+  
+  <!-- Left Sidebar Menu -->
+  <div class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-header">
+      <div class="logo-container" *ngIf="!sidebarCollapsed">
+        <img src="images/milk3.jpg" alt="Milk Order Logo" class="logo-image" (error)="onImageError($event)">
+        <h3>Dashboard</h3>
+      </div>
+      <div class="logo-icon" *ngIf="sidebarCollapsed">
+        <img src="images/milk3.jpg" alt="Milk Order Logo" class="logo-icon-image">
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()" 
+              [matTooltip]="sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'"
+              matTooltipPosition="right">
+        <mat-icon>{{ sidebarCollapsed ? 'menu_open' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <ul class="menu-list">
+        <li *ngFor="let item of menuItems" 
+            class="menu-item" 
+            [class.active]="item.active"
+            (click)="selectMenuItem(item.id)"
+            [matTooltip]="sidebarCollapsed ? item.title : ''"
+            matTooltipPosition="right">
+          <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
+          <span class="menu-title" *ngIf="!sidebarCollapsed">{{ item.title }}</span>
+        </li>
+      </ul>
+    </nav>
+
+     <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()" [matTooltip]="sidebarCollapsed ? 'Logout' : ''" matTooltipPosition="right">
+        <mat-icon class="logout-icon">logout</mat-icon>
+        <span *ngIf="!sidebarCollapsed">Logout</span>
+      </button>
+    </div> 
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="content-body">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

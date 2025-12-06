@@ -117,7 +117,15 @@ export class LoginComponent implements OnDestroy {
     this.milkOrderService.verifyOTP(userId, otp.toString()).subscribe({
         next: (response) => {
           if(response && response.result.data){
-            this.router.navigate(['/home']);
+            // Ensure userDetails is in localStorage before navigating
+            const userDetails = localStorage.getItem('userDetails');
+            if (userDetails) {
+              console.log('Navigating to /nav/customers with user:', JSON.parse(userDetails));
+              this.router.navigate(['/nav/customers']);
+            } else {
+              console.error('UserDetails not found in localStorage');
+              this.errorMessage = 'Session error. Please try logging in again.';
+            }
           } else{
             this.errorMessage = 'Invalid PIN. Please try again.';
             this.successMessage = '';
@@ -125,7 +133,8 @@ export class LoginComponent implements OnDestroy {
         }
         ,
         error: (error) => {
-          
+          console.error('OTP verification error:', error);
+          this.errorMessage = 'Verification failed. Please try again.';
         }
       });
   }

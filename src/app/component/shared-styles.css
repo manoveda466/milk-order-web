@@ -458,16 +458,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  padding: 5px 20px;
   background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
   border-radius: 10px 10px 0 0;
   cursor: pointer;
   user-select: none;
   transition: all 0.3s ease;
-}
-
-.filter-header:hover {
-  background: linear-gradient(135deg, #0096c7 0%, #0077b6 100%);
 }
 
 .filter-header h4 {
@@ -507,6 +503,7 @@
   max-height: 1000px;
   opacity: 1;
   padding: 20px;
+  padding-bottom: 0px;
 }
 
 .filter-row {

@@ -1,27 +1,27 @@
-mat-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-mat-card-header {
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
 }
 
-mat-card-title {
+.header-title h2 {
+  margin: 0;
   font-size: 24px;
   font-weight: 500;
-  margin: 0;
+  color: #333;
 }
 
-mat-card-subtitle {
-  color: #666;
+.header-title .subtitle {
   margin: 8px 0 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.content-section {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .header-actions {
@@ -58,11 +58,12 @@ mat-card-subtitle {
   border-radius: 8px;
   overflow: hidden;
   background-color: white;
+  flex-shrink: 0;
 }
 
 .filter-header {
   background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
-  padding: 12px 20px;
+  padding: 5px 20px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -71,9 +72,6 @@ mat-card-subtitle {
   user-select: none;
 }
 
-.filter-header:hover {
-  background: linear-gradient(135deg, #0096c7 0%, #0077b6 100%);
-}
 
 .filter-header h4 {
   margin: 0;
@@ -82,6 +80,7 @@ mat-card-subtitle {
   gap: 8px;
   font-size: 16px;
   font-weight: 500;
+  color: white;
 }
 
 .filter-active-badge {
@@ -125,6 +124,7 @@ mat-card-subtitle {
   max-height: 500px;
   opacity: 1;
   padding: 16px;
+  padding-bottom: 0px;
 }
 
 .filter-row {
@@ -153,6 +153,32 @@ mat-card-subtitle {
   cursor: not-allowed;
 }
 
+/* View Container */
+.view-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.view-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.view-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.view-container::-webkit-scrollbar-thumb {
+  background: #00b4d8;
+  border-radius: 10px;
+}
+
+.view-container::-webkit-scrollbar-thumb:hover {
+  background: #0096c7;
+}
+
 /* Grid View Styles */
 .customer-token-grid {
   display: grid;
@@ -177,40 +203,44 @@ mat-card-subtitle {
 .customer-card-header {
   background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
   color: white;
-  padding: 16px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .customer-icon {
-  font-size: 32px;
-  width: 32px;
-  height: 32px;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .customer-name {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 500;
 }
 
 .customer-card-body {
-  padding: 16px;
+  padding: 12px;
 }
 
 .token-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.token-grid.single-token {
+  grid-template-columns: 1fr;
 }
 
 .token-item {
   background: #f5f5f5;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 8px;
+  border-radius: 6px;
   text-align: center;
-  border: 2px solid #e0e0e0;
+  border: 1px solid #e0e0e0;
   transition: all 0.2s ease;
 }
 
@@ -220,15 +250,15 @@ mat-card-subtitle {
 }
 
 .token-type {
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   font-weight: 500;
   text-transform: uppercase;
 }
 
 .token-quantity {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
   color: #00b4d8;
 }
@@ -242,9 +272,7 @@ mat-card-subtitle {
 
 /* List View (Table) Styles */
 .table-container {
-  overflow-x: auto;
-  flex: 1;
-  margin-top: 20px;
+  width: 100%;
 }
 
 mat-table {
@@ -350,8 +378,7 @@ mat-cell {
 }
 
 .mat-mdc-header-row {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #00b4d8;
+  background-color: #def5fa;
 }
 
 .mat-mdc-row {
@@ -370,29 +397,9 @@ mat-cell {
   letter-spacing: 0.5px;
 }
 
-/* Table Container with Scroll */
+/* Table Container */
 .table-container {
-  max-height: 60vh;
-  overflow-y: auto;
-  position: relative;
-}
-
-.table-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-  background: #00b4d8;
-  border-radius: 10px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-  background: #0096c7;
+  width: 100%;
 }
 
 /* Button Styles */

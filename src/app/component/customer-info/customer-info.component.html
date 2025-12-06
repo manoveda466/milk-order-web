@@ -1,7 +1,9 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Customer Information</mat-card-title>
-    <mat-card-subtitle>Manage customer profile and personal details</mat-card-subtitle>
+<div class="header-section">
+  <div class="header-content">
+    <div class="header-title">
+      <h2>Customer Information</h2>
+      <p class="subtitle">Manage customer profile and personal details</p>
+    </div>
     <div class="header-actions">
       <button mat-raised-button color="primary" (click)="editUser(0)">
         <mat-icon>person_add</mat-icon>
@@ -27,10 +29,11 @@
         </button>
       </mat-menu>
     </div>
-  </mat-card-header>
-  
-  <mat-card-content>
-    <!-- Customer Search Section -->
+  </div>
+</div>
+
+<div class="content-section">
+  <!-- Customer Search Section -->
     <div class="search-filters">
       <div class="filter-header" (click)="toggleCustomerFilters()">
         <h4>
@@ -62,7 +65,8 @@
       </div>
     </div>
     
-    <div class="table-container">
+    <div class="view-container">
+      <div class="table-container">
       <mat-table [dataSource]="userDataSource" matSort class="mat-elevation-1">
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</mat-header-cell>
@@ -132,6 +136,6 @@
           </td>
         </tr>
       </mat-table>
+      </div>
     </div>
-  </mat-card-content>
-</mat-card>
+  </div>

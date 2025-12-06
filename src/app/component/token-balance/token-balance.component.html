@@ -1,17 +1,20 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Customer Token Balance</mat-card-title>
-    <mat-card-subtitle>View customer token balance information</mat-card-subtitle>
+<div class="header-section">
+  <div class="header-content">
+    <div class="header-title">
+      <h2>Customer Token Balance</h2>
+      <p class="subtitle">View customer token balance information</p>
+    </div>
     <div class="header-actions">
       <button mat-raised-button color="primary" (click)="toggleTokenBalanceView()" class="view-toggle-btn">
         <mat-icon>{{ tokenBalanceViewMode === 'grid' ? 'view_list' : 'grid_view' }}</mat-icon>
         {{ tokenBalanceViewMode === 'grid' ? 'List View' : 'Grid View' }}
       </button>
     </div>
-  </mat-card-header>
-  
-  <mat-card-content>
-    <!-- Search and Filter Section -->
+  </div>
+</div>
+
+<div class="content-section">
+  <!-- Search and Filter Section -->
     <div class="search-filters">
       <div class="filter-header" (click)="toggleTokenBalanceFilters()">
         <h4>
@@ -42,8 +45,9 @@
       </div>
     </div>
     
-    <!-- Grid View -->
-    <div *ngIf="tokenBalanceViewMode === 'grid'" class="customer-token-grid">
+    <div class="view-container">
+      <!-- Grid View -->
+      <div *ngIf="tokenBalanceViewMode === 'grid'" class="customer-token-grid">
       <div *ngIf="tokenBalanceDataSource.data.length === 0" class="no-data-message">
         <mat-icon>info</mat-icon>
         <span>No records available</span>
@@ -55,7 +59,7 @@
           <h3 class="customer-name">{{customer.userName}}</h3>
         </div>
         <div class="customer-card-body">
-          <div class="token-grid">
+          <div class="token-grid" [class.single-token]="customer.tokenDetails.length === 1">
             <div *ngFor="let token of customer.tokenDetails" class="token-item">
               <div class="token-type">{{token.tokenType}}</div>
               <div class="token-quantity">{{token.tokenQty}}</div>
@@ -100,5 +104,5 @@
         </tr>
       </mat-table>
     </div>
-  </mat-card-content>
-</mat-card>
+  </div>
+</div>

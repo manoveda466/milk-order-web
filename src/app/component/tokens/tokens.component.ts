@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, AfterViewInit, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -12,11 +12,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MilkOrderService } from '../../services/milk-order.service';
 import { LoadingService} from '../../services/loading.service';
 import { DataRefreshService } from '../../services/data-refresh.service';
+import { TokenDialogComponent } from '../token-dialog/token-dialog.component';
 
 const DD_MM_YYYY_FORMAT = {
   parse: {
@@ -47,6 +49,7 @@ const DD_MM_YYYY_FORMAT = {
     MatDatepickerModule,
     MatNativeDateModule,
     MatMenuModule,
+    MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule
   ],
@@ -58,7 +61,6 @@ const DD_MM_YYYY_FORMAT = {
 })
 export class TokensComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
-  @Output() addTokenClicked = new EventEmitter<void>();
 
   userTokenDetails: any[] = [];
   filteredTokenHistory: any[] = [];
@@ -77,8 +79,10 @@ export class TokensComponent implements OnInit, AfterViewInit {
   uniqueCustomerNames: string[] = [];
   uniqueTokenStatuses: string[] = [];
   uniquePaymentModes: string[] = [];
+  userDetails: any[] = []; // For token dialog
 
   constructor(
+    private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private milkOrderService: MilkOrderService,
     private dateAdapter: DateAdapter<Date>,
@@ -86,6 +90,7 @@ export class TokensComponent implements OnInit, AfterViewInit {
     private dataRefreshService: DataRefreshService
   ) {
     this.dateAdapter.setLocale('en-GB');
+    this.getUserDetails(); // Load customer details for token dialog
   }
 
   ngOnInit() {
@@ -244,6 +249,42 @@ export class TokensComponent implements OnInit, AfterViewInit {
 
     snackBarRef.afterDismissed().subscribe(() => {
       this.loadingService.setSnackbarOpen(false);
+    });
+  }
+
+  getUserDetails(): void {
+    this.milkOrderService.getCustomerDetails().subscribe({
+      next: (response) => {
+        if (response && response.result.data.length > 0) {
+          this.userDetails = response.result.data;
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching customer details:', error);
+      }
+    });
+  }
+
+  addToken(): void {
+    this.loadingService.setDialogOpen(true);
+    const activeCustomers = this.userDetails.filter(user => user.isActive);
+    const dialogRef = this.dialog.open(TokenDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: false,
+      data: { token: null, users: activeCustomers }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.loadingService.setDialogOpen(false);
+      if(result && result.success == true) {
+        this.getTokenHistory();
+        this.dataRefreshService.triggerAllRefresh();
+        
+        this.showSnackbar('Token added successfully!', 'Close', {
+          panelClass: ['success-snackbar']
+        });
+      }
     });
   }
 }

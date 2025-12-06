@@ -1,9 +1,11 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Order Management</mat-card-title>
-    <mat-card-subtitle>Track and manage customer orders</mat-card-subtitle>
+<div class="header-section">
+  <div class="header-content">
+    <div class="header-title">
+      <h2>Order Management</h2>
+      <p class="subtitle">Track and manage customer orders</p>
+    </div>
     <div class="header-actions">
-      <button mat-raised-button color="primary" (click)="createManualOrderClicked.emit()" style="margin-right: 8px;">
+      <button mat-raised-button color="primary" (click)="createManualOrder()" style="margin-right: 8px;">
         <mat-icon>add</mat-icon>
         Manual Order
       </button>
@@ -13,10 +15,11 @@
         Export PDF
       </button>
     </div>
-  </mat-card-header>
-  
-  <mat-card-content>
-    <!-- Search and Filter Section -->
+  </div>
+</div>
+
+<div class="content-section">
+  <!-- Search and Filter Section -->
     <div class="search-filters">
       <div class="filter-header" (click)="toggleOrderFilters()">
         <h4>
@@ -82,24 +85,32 @@
     
     <!-- Bulk Update Section -->
     <div class="bulk-update-section" *ngIf="getSelectedOrdersCount() > 0">
-      <div class="bulk-update-info">
-        <mat-icon>check_circle</mat-icon>
-        <span><strong>{{getSelectedOrdersCount()}}</strong> {{ getSelectedOrdersCount() === 1 ? 'Order' : 'Orders' }} Selected</span>
+      <div class="bulk-update-container">
+        <mat-form-field appearance="outline" class="modern-select">
+          <mat-label>Select Status</mat-label>
+          <mat-select [(ngModel)]="bulkUpdateStatus" placeholder="Choose an action">
+            <mat-option value="Delivered">
+              <mat-icon class="option-icon delivered-icon">check_circle</mat-icon>
+              Mark as Delivered
+            </mat-option>
+            <mat-option value="Cancelled">
+              <mat-icon class="option-icon cancelled-icon">cancel</mat-icon>
+              Mark as Cancelled
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <button mat-flat-button 
+                class="modern-submit-btn" 
+                (click)="bulkUpdateOrderStatus()" 
+                [disabled]="!bulkUpdateStatus">
+          <span>Update Orders</span>
+        </button>
       </div>
-      <mat-form-field appearance="outline" class="bulk-status-field">
-        <mat-label>Update Status</mat-label>
-        <mat-select [(ngModel)]="bulkUpdateStatus">
-          <mat-option value="Delivered">Delivered</mat-option>
-          <mat-option value="Cancelled">Cancelled</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <button mat-raised-button color="accent" (click)="bulkUpdateOrderStatus()" [disabled]="!bulkUpdateStatus">
-        <mat-icon>update</mat-icon>
-        Update Selected
-      </button>
     </div>
     
-    <div class="table-container">
+    <div class="view-container">
+      <div class="table-container">
       <mat-table [dataSource]="orderDataSource" matSort class="mat-elevation-1">
         <ng-container matColumnDef="select">
           <mat-header-cell *matHeaderCellDef>
@@ -194,6 +205,6 @@
           </td>
         </tr>
       </mat-table>
+      </div>
     </div>
-  </mat-card-content>
-</mat-card>
+  </div>
