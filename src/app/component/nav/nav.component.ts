@@ -153,6 +153,7 @@ export class NavComponent implements OnInit, OnDestroy {
 
   logout(): void {
     localStorage.removeItem('userDetails');
+    localStorage.removeItem('sidebarCollapsed');
     this.router.navigate(['/login']);
   }
 
