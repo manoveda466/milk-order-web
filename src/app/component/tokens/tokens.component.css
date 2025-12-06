@@ -58,6 +58,11 @@
   gap: 8px;
   font-size: 16px;
   font-weight: 500;
+  color: white;
+}
+
+.filter-header h4 mat-icon {
+  color: white;
 }
 
 .filter-active-badge {
@@ -83,6 +88,7 @@
 
 .expand-icon {
   transition: transform 0.3s ease;
+  color: white;
 }
 
 .expand-icon.rotated {
@@ -318,6 +324,13 @@ mat-cell {
 /* Table Container */
 .table-container {
   width: 100%;
+}
+
+/* Token Qty Column */
+.mat-column-tokenQty {
+  width: 80px;
+  max-width: 80px;
+  text-align: center;
 }
 
 /* Actions Column */

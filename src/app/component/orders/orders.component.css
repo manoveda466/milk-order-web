@@ -60,6 +60,11 @@
   gap: 8px;
   font-size: 16px;
   font-weight: 500;
+  color: white;
+}
+
+.filter-header h4 mat-icon {
+  color: white;
 }
 
 .filter-active-badge {
@@ -85,6 +90,7 @@
 
 .expand-icon {
   transition: transform 0.3s ease;
+  color: white;
 }
 
 .expand-icon.rotated {
@@ -555,7 +561,23 @@ mat-cell.order-id {
 
 /* Checkbox Column */
 .mat-column-select {
-  width: 50px;
+  width: 40px;
+  max-width: 40px;
+  text-align: center;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+/* Customer Name Column */
+.mat-column-userName {
+  min-width: 200px;
+  width: 200px;
+}
+
+/* Token Qty Column */
+.mat-column-tokenQty {
+  width: 80px;
+  max-width: 80px;
   text-align: center;
 }
 

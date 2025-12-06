@@ -201,7 +201,7 @@
 }
 
 .customer-card-header {
-  background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+  background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
   color: white;
   padding: 10px 12px;
   display: flex;
@@ -305,24 +305,27 @@ mat-cell {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: transparent;
-  border: 1.5px solid #00b4d8;
-  border-radius: 12px;
-  padding: 2px 8px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
   font-size: 11px;
 }
 
 .token-name {
-  color: #00b4d8;
-  font-weight: 600;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 10px;
 }
 
 .token-count {
-  background-color: #00b4d8;
-  color: white;
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-weight: 700;
+  background-color: transparent;
+  color: #00b4d8;
+  border-radius: 0;
+  padding: 0;
+  font-weight: 600;
+  font-size: 18px;
   min-width: 20px;
   text-align: center;
 }
