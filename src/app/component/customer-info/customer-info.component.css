@@ -336,6 +336,64 @@ mat-cell {
 .pin-cell {
   font-family: monospace;
   font-weight: 600;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pin-content {
+  display: inline-block;
+}
+
+.pin-cell .pin-masked {
+  display: inline-block;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: #666;
+}
+
+.pin-cell .pin-revealed {
+  display: none;
+  font-size: 14px;
+  color: #333;
+}
+
+.pin-eye-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #999;
+  transition: color 0.3s ease;
+}
+
+.pin-eye-off {
+  display: inline-block;
+}
+
+.pin-eye-on {
+  display: none;
+}
+
+.pin-cell:hover .pin-masked {
+  display: none;
+}
+
+.pin-cell:hover .pin-revealed {
+  display: inline-block;
+}
+
+.pin-cell:hover .pin-eye-off {
+  display: none;
+}
+
+.pin-cell:hover .pin-eye-on {
+  display: inline-block;
+}
+
+.pin-cell:hover .pin-eye-icon {
+  color: #00b4d8;
 }
 
 /* Button Styles */

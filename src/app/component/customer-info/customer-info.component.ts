@@ -92,11 +92,11 @@ export class CustomerInfoComponent implements OnInit, AfterViewInit {
     });
   }
 
-  updateCustomerStatus(data: any) {
+  updateCustomerStatus (data: any) {
     this.milkOrderService.updateCustomerStatus(data).subscribe({
-      next: (response) => {
+      next: async (response) => {
         if (response && response.result.data) {
-          this.getCustomerDetails();
+          await this.getCustomerDetails();
           this.showSnackbar('User status changed successfully!', 'Close', {
             panelClass: ['warning-snackbar']
           });
@@ -119,12 +119,11 @@ export class CustomerInfoComponent implements OnInit, AfterViewInit {
       data: { user: user }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
       this.loadingService.setDialogOpen(false);
-      if (result.success == true) {
+      if (result.success == true) {        
+        await this.getCustomerDetails();
         if (userId === 0) {
-          this.getCustomerDetails();
-          this.dataRefreshService.triggerAllRefresh(); // Refresh all components
           this.showSnackbar('User added successfully!', 'Close', {
             panelClass: ['success-snackbar']
           });
@@ -137,8 +136,6 @@ export class CustomerInfoComponent implements OnInit, AfterViewInit {
             panelClass: ['success-snackbar']
           });
         }
-        this.getCustomerDetails();
-        this.dataRefreshService.triggerAllRefresh(); // Refresh all components
       } else {
         this.showSnackbar('Mobile number already exists. Please try a different number.', 'Close', {
           duration: 5000,

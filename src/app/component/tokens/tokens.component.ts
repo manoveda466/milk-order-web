@@ -191,9 +191,9 @@ export class TokensComponent implements OnInit, AfterViewInit {
               tokenQty: userToken.qty,
               status: 'add'
             }).subscribe({
-              next: (res: any) => {
+              next: async (res: any) => {
                 if (res && res.result.data) {
-                  this.getTokenHistory();
+                  await this.getTokenHistory();
                   this.showSnackbar('Cash payment recorded successfully!', 'Close', {
                     panelClass: ['success-snackbar']
                   });
@@ -220,9 +220,9 @@ export class TokensComponent implements OnInit, AfterViewInit {
       const userToken = this.userTokenDetails.find((u: any) => u.userTokenId === userTokenId);
 
       this.milkOrderService.deleteCustomerToken(userTokenId).subscribe({
-        next: (response: any) => {
+        next: async (response: any) => {
           if (response && response.result.data) {
-            this.getTokenHistory();
+            await this.getTokenHistory();
             this.showSnackbar('Token deleted successfully!', 'Close', {
               panelClass: ['success-snackbar']
             });
@@ -275,10 +275,10 @@ export class TokensComponent implements OnInit, AfterViewInit {
       data: { token: null, users: activeCustomers }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
       this.loadingService.setDialogOpen(false);
       if(result && result.success == true) {
-        this.getTokenHistory();
+        await this.getTokenHistory();
         this.dataRefreshService.triggerAllRefresh();
         
         this.showSnackbar('Token added successfully!', 'Close', {

@@ -55,6 +55,7 @@
           <label class="field-label">Mobile Login PIN *</label>
           <mat-form-field appearance="outline">
             <input matInput formControlName="pin" 
+                   [type]="showPin ? 'text' : 'password'"
                    placeholder="Enter 6-digit PIN" 
                    maxlength="6"
                    (input)="onPinInput($event)"
@@ -62,6 +63,9 @@
                    pattern="[0-9]*"
                    inputmode="numeric"
                   >
+            <button mat-icon-button matSuffix (click)="togglePinVisibility()" type="button" tabindex="-1">
+              <mat-icon>{{ showPin ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
             <mat-hint>Enter 6-digit numeric PIN</mat-hint>
             <mat-error *ngIf="userForm.get('pin')?.touched && userForm.get('pin')?.errors">
               {{ getErrorMessage('pin') }}

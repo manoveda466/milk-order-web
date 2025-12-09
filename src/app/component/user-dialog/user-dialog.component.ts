@@ -30,6 +30,7 @@ export class UserDialogComponent {
   userForm: FormGroup;
   isEditMode: boolean = false;
   isSubmitting: boolean = false; // Flag to prevent duplicate submissions
+  showPin: boolean = false; // Flag to toggle PIN visibility
 
   areas: any[] = [];
 
@@ -261,5 +262,9 @@ export class UserDialogComponent {
 
   isAddCustomerEnabled(): boolean {
     return this.userForm.valid && !this.isSubmitting;
+  }
+
+  togglePinVisibility(): void {
+    this.showPin = !this.showPin;
   }
 }

@@ -314,26 +314,42 @@ export class ManualOrderDialogComponent {
 
   validateTokenQuantity(): void {
     const requestedQty = this.orderForm.get('tokenQty')?.value;
+    const userId = this.orderForm.get('userId')?.value;
+    const tokenTypeId = this.orderForm.get('tokenType')?.value;
+    const control = this.orderForm.get('tokenQty');
     
-    if (requestedQty && this.availableTokenQty > 0) {
-      if (requestedQty > this.availableTokenQty) {
-        this.tokenQtyError = `Only ${this.availableTokenQty} tokens available`;
-        this.orderForm.get('tokenQty')?.setErrors({ insufficientTokens: true });
-      } else {
-        this.tokenQtyError = '';
-        // Remove the custom error if quantity is valid
-        const control = this.orderForm.get('tokenQty');
-        if (control?.hasError('insufficientTokens')) {
-          const errors = { ...control.errors };
-          delete errors['insufficientTokens'];
-          control.setErrors(Object.keys(errors).length ? errors : null);
-        }
-      }
-    } else if (requestedQty && this.availableTokenQty === 0) {
+    // Check if customer and token type are selected
+    if (!userId || !tokenTypeId) {
+      this.tokenQtyError = '';
+      return;
+    }
+    
+    // Check if no tokens are available
+    if (this.availableTokenQty === 0) {
       this.tokenQtyError = 'No tokens available for this token type';
-      this.orderForm.get('tokenQty')?.setErrors({ noTokensAvailable: true });
+      if (control) {
+        control.setErrors({ ...control.errors, noTokensAvailable: true });
+        control.markAsTouched();
+      }
+      return;
+    }
+    
+    // Validate requested quantity against available
+    if (requestedQty && requestedQty > this.availableTokenQty) {
+      this.tokenQtyError = `Only ${this.availableTokenQty} tokens available`;
+      if (control) {
+        control.setErrors({ ...control.errors, insufficientTokens: true });
+        control.markAsTouched();
+      }
     } else {
       this.tokenQtyError = '';
+      // Remove the custom error if quantity is valid
+      if (control?.hasError('insufficientTokens') || control?.hasError('noTokensAvailable')) {
+        const errors = { ...control.errors };
+        delete errors['insufficientTokens'];
+        delete errors['noTokensAvailable'];
+        control.setErrors(Object.keys(errors).length ? errors : null);
+      }
     }
   }
 

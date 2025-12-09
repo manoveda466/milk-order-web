@@ -90,7 +90,14 @@
 
         <ng-container matColumnDef="pin">
           <mat-header-cell *matHeaderCellDef>Login PIN</mat-header-cell>
-          <mat-cell *matCellDef="let user" class="pin-cell">{{user.pin}}</mat-cell>
+          <mat-cell *matCellDef="let user" class="pin-cell">
+            <span class="pin-content">
+              <span class="pin-masked">••••</span>
+              <span class="pin-revealed">{{user.pin}}</span>
+            </span>
+            <mat-icon class="pin-eye-icon pin-eye-off">visibility_off</mat-icon>
+            <mat-icon class="pin-eye-icon pin-eye-on">visibility</mat-icon>
+          </mat-cell>
         </ng-container>
 
         <ng-container matColumnDef="isActive">

@@ -386,9 +386,9 @@ export class OrdersComponent implements OnInit, AfterViewInit {
         status: 'Delivered',
         updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
       }).subscribe({
-        next: (response) => {
+        next: async (response) => {
           if (response && response.result.data) {
-            this.getOrderDetails();
+            await this.getOrderDetails();
             this.showSnackbar('Order delivered successfully!', 'Close', {
               panelClass: ['success-snackbar']
             });
@@ -414,9 +414,9 @@ export class OrdersComponent implements OnInit, AfterViewInit {
               tokenQty: order.tokenQty,
               status: 'add'
             }).subscribe({
-              next: (res) => {
+              next: async (res) => {
                 if (res && res.result.data) {
-                  this.getOrderDetails();
+                  await this.getOrderDetails();
                   this.showSnackbar('Order cancelled successfully!', 'Close', {
                     panelClass: ['success-snackbar']
                   });
@@ -496,10 +496,10 @@ export class OrdersComponent implements OnInit, AfterViewInit {
     const selectedOrdersString = Array.from(this.selectedOrders).join(',');
 
     this.milkOrderService.updateBuldkOrder(selectedOrdersString, this.bulkUpdateStatus).subscribe({
-      next: (response) => {
+      next: async (response) => {
         if (response && response.result.data) {
-          this.getOrderDetails();
-          this.filterOrders();
+          await this.getOrderDetails();
+          await this.filterOrders();
           this.showSnackbar(`Selected order(s) updated successfully!`, 'Close', {
             panelClass: ['success-snackbar']
           });

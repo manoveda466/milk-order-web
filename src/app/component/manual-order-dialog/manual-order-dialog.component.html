@@ -60,8 +60,8 @@
                    type="number" 
                    min="1" 
                    [max]="availableTokenQty > 0 ? availableTokenQty : 100">
-            <mat-hint *ngIf="availableTokenQty > 0">Max available: {{ availableTokenQty }}</mat-hint>
-            <mat-error *ngIf="orderForm.get('tokenQty')?.touched && orderForm.get('tokenQty')?.errors">
+            <mat-hint *ngIf="availableTokenQty > 0 && !tokenQtyError">Max available: {{ availableTokenQty }}</mat-hint>
+            <mat-error *ngIf="orderForm.get('tokenQty')?.errors || tokenQtyError">
               {{ getErrorMessage('tokenQty') }}
             </mat-error>
           </mat-form-field>
