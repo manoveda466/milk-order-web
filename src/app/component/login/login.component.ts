@@ -50,14 +50,24 @@ export class LoginComponent implements OnDestroy {
         if(response && response.result.data.length > 0 && response.result.data[0].userId > 0){
           this.showOtpScreen = true;
           //this.successMessage = `User is valid. Sending OTP to +91 ${this.mobileNumber}`;
-          this.getUserDetailsById(response.result.data[0].userId);
+          localStorage.setItem('userId', JSON.stringify(response.result.data[0].userId));
+          localStorage.setItem('roleId', JSON.stringify(response.result.data[0].roleId));
+
+          if(response.result.data[0].roleId != 1){
+            this.errorMessage = 'User don\'t have access rights. Please contact administrator.';
+            this.showOtpScreen = false;
+            localStorage.removeItem('userId');
+            localStorage.removeItem('roleId');
+            return;
+          }
+
           
-          const otpData = {
-            "userId": response.result.data[0].userId,
-            "otp": null,
-            "validity": new Date(),
-            "createdOn": new Date()
-          };
+          // const otpData = {
+          //   "userId": response.result.data[0].userId,
+          //   "otp": null,
+          //   "validity": new Date(),
+          //   "createdOn": new Date()
+          // };
           //this.sendOTP(otpData);
         }
         else{
@@ -75,7 +85,6 @@ export class LoginComponent implements OnDestroy {
     this.milkOrderService.getUserDetailsById(userId).subscribe({
         next: (response) => {
           this.startOtpTimer();
-         localStorage.setItem('userDetails', JSON.stringify(response.result.data[0]));
         }
         ,
         error: (error) => {
@@ -112,20 +121,16 @@ export class LoginComponent implements OnDestroy {
 
   // Verify OTP
   verifyOtp() {
-    let userId = localStorage.getItem('userDetails') ? JSON.parse(localStorage.getItem('userDetails')!).userId : 0;
+    let userId = localStorage.getItem('userId') ? parseInt(localStorage.getItem('userId')!) : 0;
+    let roleId = localStorage.getItem('roleId') ? parseInt(localStorage.getItem('roleId')!) : 0;
     let otp = this.otp.trim();
     this.milkOrderService.verifyOTP(userId, otp.toString()).subscribe({
         next: (response) => {
-          if(response && response.result.data){
-            // Ensure userDetails is in localStorage before navigating
-            const userDetails = localStorage.getItem('userDetails');
-            if (userDetails) {
-              console.log('Navigating to /nav/customers with user:', JSON.parse(userDetails));
-              this.router.navigate(['/nav/customers']);
-            } else {
-              console.error('UserDetails not found in localStorage');
-              this.errorMessage = 'Session error. Please try logging in again.';
-            }
+          if(response && response.result.data){  
+            if (roleId == 1) {   
+              localStorage.setItem('isLoggedIn', 'true');      
+              this.router.navigate(['/nav/customers']);  
+            }          
           } else{
             this.errorMessage = 'Invalid PIN. Please try again.';
             this.successMessage = '';
@@ -153,7 +158,7 @@ export class LoginComponent implements OnDestroy {
     
     // Call the API to resend OTP
    const otpData = {
-            "userId": localStorage.getItem('userDetails') ? JSON.parse(localStorage.getItem('userDetails')!).userId : 0,
+            "userId": localStorage.getItem('userId'),
             "otp": null,
             "validity": new Date(),
             "createdOn": new Date()

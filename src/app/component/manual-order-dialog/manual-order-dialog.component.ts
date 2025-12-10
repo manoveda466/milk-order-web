@@ -114,7 +114,7 @@ export class ManualOrderDialogComponent {
         tokenQty: formValue.tokenQty,
         orderDate: this.formatDateToISO(formValue.orderDate),
         status: "Confirmed",
-        createdBy: JSON.parse(localStorage.getItem('userDetails')!).userId,
+        createdBy: localStorage.getItem('userId'),
         createdOn: this.formatDateTimeToIST(new Date())
       };
 

@@ -86,7 +86,7 @@ export class UserDialogComponent {
         areaId: formValue.area,
         address: formValue.address,
         isActive: true,
-        createdBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
+        createdBy: localStorage.getItem('userId')
       };
 
       // Add userId for update operations

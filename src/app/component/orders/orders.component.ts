@@ -384,7 +384,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
       this.milkOrderService.updateOrderStatus({
         orderId: orderId,
         status: 'Delivered',
-        updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
+        updatedBy: localStorage.getItem('userId')
       }).subscribe({
         next: async (response) => {
           if (response && response.result.data) {
@@ -404,7 +404,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
       await this.milkOrderService.updateOrderStatus({
         orderId: orderId,
         status: 'Cancelled',
-        updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
+        updatedBy: localStorage.getItem('userId')
       }).subscribe({
         next: (response) => {
           if (response && response.result.data) {

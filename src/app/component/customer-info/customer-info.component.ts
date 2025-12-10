@@ -150,7 +150,7 @@ export class CustomerInfoComponent implements OnInit, AfterViewInit {
       this.updateCustomerStatus({
         userId: userId,
         isActive: false,
-        updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
+        updatedBy: localStorage.getItem('userId')
       });
     }
   }
@@ -160,7 +160,7 @@ export class CustomerInfoComponent implements OnInit, AfterViewInit {
       this.updateCustomerStatus({
         userId: userId,
         isActive: true,
-        updatedBy: JSON.parse(localStorage.getItem('userDetails')!).userId.toString()
+        updatedBy: localStorage.getItem('userId')
       });
     }
   }
